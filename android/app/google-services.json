@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "849284800966",
+    "project_id": "consciousmedia-4e0d7",
+    "storage_bucket": "consciousmedia-4e0d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849284800966:android:2183932cca18c0feef92c7",
+        "android_client_info": {
+          "package_name": "com.appspot.cmedia.conscious_media"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "849284800966-17n8cdf1um0ckthlvlk9030mi7ruskoq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBg5mOoIa5qOiLQ3BbS1ldxk5pGW7J-5Bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "849284800966-17n8cdf1um0ckthlvlk9030mi7ruskoq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
