@@ -26,8 +26,7 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   final ShowPostController _showpostController = Get.put(ShowPostController());
-
-  var id;
+  var followedTopic = [];
   final imageList = [
     Images.follow_1,
     Images.follow_2,
@@ -65,16 +64,20 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    print("current user");
+    print(currentuser);
     return GetBuilder<ShowPostController>(
       init: ShowPostController(),
       builder: (value) {
         return SafeArea(
           child: Scaffold(
             //bottomNavigationBar: BottomNavBar();
-
             drawer: CustomDrawer(),
-            body: SingleChildScrollView(
+            body: Container(
+              height: double.infinity,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     height: 20.h,
@@ -85,143 +88,191 @@ class _HomePageScreenState extends State<HomePageScreen> {
                   ),
                   StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
-                        .collection("AllPost")
+                        .collection("FollowedUser")
+                        .doc(currentuser)
+                        .collection("FollowedUser")
                         .snapshots(),
                     builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot<dynamic>> snapshot1) {
-                      if (!snapshot1.hasData) {
+                        AsyncSnapshot<QuerySnapshot<dynamic>> snapshot) {
+                      if (!snapshot.hasData) {
                         return const Center(
-                          child: Text("No data Found"),
+                          child: Text("No Data"),
                         );
                       }
-                      if (snapshot1.connectionState ==
-                          ConnectionState.waiting) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
                           child: CircularProgressIndicator.adaptive(),
                         );
                       }
-
                       return ListView.builder(
                         shrinkWrap: true,
-                        itemCount: snapshot1.data!.docs.length,
+                        itemCount: snapshot.data!.docs.length,
                         itemBuilder: (BuildContext context, int index) {
-                          id = snapshot1.data!.docs[index].id;
-                          print("Idsssssss" + id);
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12.h),
-                            child: Container(
-                              height: MediaQuery.of(context).size.height,
-                              child: StreamBuilder<QuerySnapshot>(
-                                stream: FirebaseFirestore.instance
-                                    .collection('AllPost')
-                                    .doc(id)
-                                    .collection('AllPost')
-                                    .where("topic", whereIn: value.data)
-                                    .snapshots(),
-                                builder: (BuildContext context,
-                                    AsyncSnapshot<QuerySnapshot<dynamic>>
-                                        snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                      child: Text("No data Found"),
-                                    );
-                                  }
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Center(
-                                      child:
-                                          CircularProgressIndicator.adaptive(),
-                                    );
-                                  }
-
-                                  return ListView.builder(
-                                    itemCount: snapshot.data!.docs.length,
-                                    itemBuilder: (context, index) {
-                                      var likeuser = [];
-                                      var data =
-                                          snapshot.data!.docs[index].data();
-                                      likeuser.add(data);
-                                      print("Like user");
-                                     // print(likeuser);
-
-                                      // like
-                                      List likes = snapshot.data!.docs[index]
-                                          ["like"] as List;
-
-                                      print("likes as:$likes");
-
-                                      List list = [];
-                                      for (var key in likes) {
-                                        list.add(key);
-                                      }
-                                      print(list.length);
-
-                                      print(list);
-
-                                      // Map map = {...likes};
-                                      // List like = [];
-                                      // // print("Likes List");
-                                      // // print(map);
-                                      // map.forEach((key, value) {
-                                      //   if (key == uid) {}
-                                      //   like.add(map.keys);
-                                      //   print("Likes List");
-                                      //   print(like.toString());
-                                      // });
-
-                                      // print("LIKES LIST");
-                                      //  print(likes);
-
-                                      return Padding(
-                                        padding:
-                                            EdgeInsets.only(bottom: 10.0.h.w),
-                                        child: GestureDetector(
-                                          // onTap: (() {
-                                          //   Get.to(() => Posted_Posts_Screen());
-                                          // }),
-                                          onTap: () {},
-
-                                          child: ReadPost(
-                                            index: index,
-                                            post_title_body: snapshot.data!
-                                                .docs[index]["description"]
-                                                .toString(),
-                                            post_title: snapshot
-                                                .data!.docs[index]["name"]
-                                                .toString(),
-                                            post_image: snapshot
-                                                .data!.docs[index]["image"]
-                                                .toString(),
-                                            post_description: snapshot
-                                                .data!.docs[index]["topic"]
-                                                .toString(),
-                                            list: list,
-                                            likeList: likeuser,
-
-                                            // list: [...like],
-
-                                            // click_open_video: () {
-                                            //   Navigator.push(
-                                            //       context,
-                                            //       MaterialPageRoute(
-                                            //           builder: (context) => Posted_Posts_Screen()));
-                                            // },
-                                            // post_like_btn: () {
-                                            //   Navigator.push(
-                                            //       context,
-                                            //       MaterialPageRoute(
-                                            //           builder: (context) => Posted_Posts_Screen()));
-                                            // },
-                                            // post_comments_btn: () {
-                                            //   CommentsTextFieldBottomSheet(context);
-                                            // },
-                                          ),
-                                        ),
-                                      );
-                                    },
+                          if (snapshot.data!.docs.length < 1) {
+                            return const Center(
+                              child: Text("No Data"),
+                            );
+                          }
+                          var followeduser = snapshot.data!.docs[index].data();
+                            var Users = snapshot.data!.docs[index]["email"];
+                            print("Follow User ids is .....");
+                            print(Users);
+                            print("....................");
+                          print(".............");
+                          print("FollowedUser");
+                          print(followeduser);
+                          print(".............");
+                          return Container(
+                            child: StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection("TopicFollow")
+                                  .doc(currentuser)
+                                  .snapshots(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<dynamic> snapshot1) {
+                                if (!snapshot1.hasData) {
+                                  return const Center(
+                                    child: Text("No Data"),
                                   );
-                                },
-                              ),
+                                }
+                                if (snapshot1.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator.adaptive(),
+                                  );
+                                }
+                                Map<String, dynamic> data = snapshot1.data!
+                                    .data() as Map<String, dynamic>;
+                                List<dynamic> followedtopic =
+                                    data["selectedTopics"] as List<dynamic>;
+                                print("..................");
+                                print("Followed Topic");
+                                print(followedtopic);
+                                print(".......................");
+                                return StreamBuilder<QuerySnapshot>(
+                                  stream: FirebaseFirestore.instance
+                                      .collection("AllPost")
+                                      .snapshots(),
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot<QuerySnapshot<dynamic>>
+                                          snapshot2) {
+                                    if (!snapshot2.hasData) {
+                                      return const Center(
+                                        child: Text("No Data"),
+                                      );
+                                    }
+                                    if (snapshot2.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                        child: CircularProgressIndicator
+                                            .adaptive(),
+                                      );
+                                    }
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: snapshot2.data!.docs.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index2) {
+                                        var ids =
+                                            snapshot2.data!.docs[index2].id;
+                                        if (snapshot2.data!.docs.length < 1) {
+                                          return const Center(
+                                            child: Text("No Data"),
+                                          );
+                                        }
+
+                                        print("....................");
+                                        print("The ids is .....");
+                                        print(ids);
+                                        print("......................");
+                                        return Container(
+                                          child: StreamBuilder<QuerySnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection("AllPost")
+                                                .doc(ids)
+                                                .collection("AllPost")
+                                                .where("topic",whereIn: followedtopic)
+                                                .snapshots(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<QuerySnapshot<dynamic>>
+                                                    snapshot3) {
+                                              if (!snapshot3.hasData) {
+                                                return const Center(
+                                                  child: Text("No data"),
+                                                );
+                                              }
+                                              if (snapshot3.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const Center(
+                                                  child:
+                                                      CircularProgressIndicator
+                                                          .adaptive(),
+                                                );
+                                              }
+                                              return ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount: snapshot3.data!.docs.length,
+                                                itemBuilder: (BuildContext context, int index3)
+                                                {
+                                                  var allPost = snapshot3.data!.docs[index3].data();
+                                                  print("...................");
+                                                  print("All Post is given below");
+                                                  print(allPost);
+                                                  print(".......................");
+                                                  List topiclist = [];
+                                                  var topics  = snapshot3.data!.docs[index3]["topic"];
+                                                  topiclist.add(topics);
+                                                  print("***********************");
+                                                  print("Topics ........");
+                                                  print(topiclist);
+                                                  print("************************");
+                                                  print("\n\n");
+
+
+
+
+                                                  return Container(
+                                                    child: StreamBuilder<QuerySnapshot>(
+                                                      stream: FirebaseFirestore.instance.collection("AllPost").doc(Users).collection("AllPost").snapshots(),
+                                                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<dynamic>> snapshot4)
+                                                      {
+                                                        if(!snapshot4.hasData)
+                                                          {
+                                                            return const Center(
+                                                              child: Text("No Data"),
+                                                            );
+                                                          }
+                                                        if(snapshot4.connectionState == ConnectionState.waiting)
+                                                          {
+                                                            return const Center(
+                                                              child: CircularProgressIndicator.adaptive(),
+                                                            );
+                                                          }
+                                                        return ListView.builder(
+                                                          shrinkWrap: true,
+                                                          itemCount: snapshot4.data!.docs.length,
+                                                          itemBuilder: (BuildContext context, int index4)
+                                                          {
+                                                            var FollowedUserData = snapshot4.data!.docs[index4].data();
+
+                                                            print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                                                            print("FollowedUserData ...........");
+                                                            print(FollowedUserData);
+                                                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                                                            return Container();
+
+                                                          },);
+                                                      },),
+                                                  );
+                                                },);
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           );
                         },
@@ -238,7 +289,12 @@ class _HomePageScreenState extends State<HomePageScreen> {
   }
 }
 
-void CommentsTextFieldBottomSheet(BuildContext context, index,String currentpostid , String currentUserid  ) {
+void CommentsTextFieldBottomSheet(
+  BuildContext context,
+  index,
+  String currentpostid,
+  String currentUserid,
+) {
   TextEditingController textEditingController = TextEditingController();
   showModalBottomSheet(
     context: context,
@@ -302,7 +358,8 @@ void CommentsTextFieldBottomSheet(BuildContext context, index,String currentpost
                                   'comment': textEditingController.text,
                                   "name": prefs.getString('name'),
                                   "image": prefs.getString('image'),
-                                  "email1": prefs.getString('email'),
+                                  "email1":
+                                      FirebaseAuth.instance.currentUser!.email
                                 }).then((value) {
                                   var id = value.id;
 
@@ -343,9 +400,9 @@ void CommentsTextFieldBottomSheet(BuildContext context, index,String currentpost
                     child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection("AllPost")
-                          .doc(value.currentUserid)
+                          .doc(currentUserid)
                           .collection("AllPost")
-                          .doc(value.currentpostid)
+                          .doc(currentpostid)
                           .collection("comments")
                           .snapshots(),
                       builder: (BuildContext context,
@@ -359,25 +416,20 @@ void CommentsTextFieldBottomSheet(BuildContext context, index,String currentpost
                           return const Center(
                             child: CircularProgressIndicator.adaptive(),
                           );
-
-                        }
-                        else if(snapshot.data!.docs.length < 1)
-                        {
+                        } else if (snapshot.data!.docs.length < 1) {
                           return const Center(
                             child: Text(" No Yet Comments"),
                           );
-                        }
-                        else {
+                        } else {
                           return ListView.builder(
                             shrinkWrap: true,
                             itemCount: snapshot.data!.docs.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              if(snapshot.data!.docs.length < 1)
-                                {
-                                  return const Center(
-                                    child: Text(" No Yet Comments"),
-                                  );
-                                }
+                            itemBuilder: (BuildContext context, index) {
+                              if (snapshot.data!.docs.length < 1) {
+                                return const Center(
+                                  child: Text(" No Yet Comments"),
+                                );
+                              }
                               return ListTile(
                                 title: Text(snapshot.data!.docs[index]["name"]),
                                 leading: CircleAvatar(

@@ -30,7 +30,7 @@ class SignInController extends GetxController {
   void onInit() async {
     // TODO: implement onInit
     super.onInit();
-    getTopicFollow();
+    //getTopicFollow();
     await getToken();
   }
 

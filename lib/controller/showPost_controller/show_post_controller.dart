@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ShowPostController extends GetxController {
   /// list to save Follow Topics
-  var data = Get.arguments;
+  //var data = Get.arguments;
+  var sList = [];
   //// Ends ////////
   ////// List For To save Full Post ///
   var postlist = [];
@@ -25,7 +28,6 @@ class ShowPostController extends GetxController {
   var topic;
   DateTime? myDateTime;
   /////// End /////////////
-  var likecount;
   ////////// Current postid, and id whoes post ///////
   var currentpostid;
   var postuserid;
@@ -36,7 +38,8 @@ class ShowPostController extends GetxController {
   //////////// Ends ///////////////
   final currentuser = FirebaseAuth.instance.currentUser;
 
-  /////////////// like counts ///////
+  /////////////// comment counts ///////
+  var comment_count;
 
   /// save those ids which like post ////////
   var likelist = [];
@@ -45,18 +48,23 @@ class ShowPostController extends GetxController {
   bool likechecking = false;
 /////////////// Ends //////////////////
   var prefs;
-  ////////// User Info /////////////////
+  ////////// Followed User List /////////////////
+   var followedList = [];
+
 
   @override
   void onInit() async {
+
     // TODO: implement onInit
     super.onInit();
     await getFetchIds();
+    await getFollowedUser();
     //await handleLikeStatus();
     await SharedPreferences.getInstance();
     print(currentuser!.email);
     // await handleLikeStatus();
-    print(data);
+   // print(data);
+
   }
 
   @override
@@ -73,24 +81,24 @@ class ShowPostController extends GetxController {
   }
 
   /// Get all Topics which user Followed
-  // getTopicFollow() async {
-  //   final currentuser = FirebaseAuth.instance.currentUser;
-  //   var email = currentuser!.email;
-  //   await FirebaseFirestore.instance
-  //       .collection('TopicFollow')
-  //       .doc(email)
-  //       .get()
-  //       .then((value) {
-  //     update();
-  //     List alldata = value.data()!["selectedTopics"];
-  //     update();
-  //     print(alldata);
-  //     update();
-  //     sList = List<String>.from(alldata);
-  //     update();
-  //   });
-  //   update();
-  // }
+  getTopicFollow() async {
+    final currentuser = FirebaseAuth.instance.currentUser;
+    var email = currentuser!.email;
+    await FirebaseFirestore.instance
+        .collection('TopicFollow')
+        .doc(email)
+        .get()
+        .then((value) {
+      update();
+      List alldata = value.data()!["selectedTopics"];
+      update();
+      print(alldata);
+      update();
+      sList = List<String>.from(alldata);
+      update();
+    });
+    update();
+  }
 
   ///<<<<<<<<<<<<<Ends<<<<<<<<<<<<<<<<<<<<<<<//
 
@@ -109,7 +117,7 @@ class ShowPostController extends GetxController {
 
         update();
       });
-      viewPostToUser();
+    //  viewPostToUser();
       update();
     });
     update();
@@ -123,7 +131,7 @@ class ShowPostController extends GetxController {
         .collection('AllPost')
         .doc(id)
         .collection('AllPost')
-        .where("followTopics", arrayContainsAny: data)
+        .where("topic", whereIn: sList)
         .get()
         .then(
       (QuerySnapshot querySnapshot) {
@@ -154,11 +162,30 @@ class ShowPostController extends GetxController {
         }
         update();
       },
-    );
+    ).then((value) {
+      getCommentCount();
+    });
     update();
   }
 
   //<<<<<<<<<<<<<< Ends <<<<<<<<<<<<<<<<<<<<<///
+// cooment count
+  getCommentCount() {
+    FirebaseFirestore.instance
+        .collection("AllPost")
+        .doc(postuserid)
+        .collection("AllPost")
+        .doc(currentpostid)
+        .collection("comments")
+        .get()
+        .then((value) {
+      print("Comment length is .....");
+      comment_count = value.docs.length;
+      print(comment_count.toString());
+      update();
+    });
+    update();
+  }
 
   //<<<<<<<<<<<<<<<<<<< codding for like status <<<<<<<<<<<<<<<<<<////
 
@@ -203,4 +230,25 @@ class ShowPostController extends GetxController {
   //     // }
   //   });
   // }
+
+  /// get followed user
+  getFollowedUser() {
+    final currentUser = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance
+        .collection("FollowedUser")
+        .doc(currentUser)
+        .collection("FollowedUser")
+        .get().then((QuerySnapshot querySnapshot) {
+
+          for(var doc in querySnapshot.docs)
+            {
+              var data = doc["userId"];
+              followedList.add(data);
+              print(".............................");
+              print(followedList);
+              print("..............................");
+            }
+
+    });
+  }
 }

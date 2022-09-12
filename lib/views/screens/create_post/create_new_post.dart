@@ -1,10 +1,13 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conscious_media/views/follow_topics/follow_one.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../controller/create_post_controller/create_post_controller.dart';
 import '../../../controller/showPost_controller/show_post_controller.dart';
@@ -166,8 +169,9 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                 InkWell(
                   onTap: () async
                   {
-                    print("iam tapped");
+
                         await _createPostController.validation(_dropDownValue!);
+
 
                           await Get.to(()=>BottomNavBar());
 

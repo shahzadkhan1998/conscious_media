@@ -1,9 +1,14 @@
+import 'dart:ffi';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../controller/Follow_controller/follow_controller.dart';
 import '../../utils/colors_resources.dart';
 import '../../utils/images.dart';
 import '../../widgets/appbar_back_btn.dart';
@@ -20,6 +25,7 @@ class SearchMembersScreen extends StatefulWidget {
 }
 
 class _SearchMembersScreenState extends State<SearchMembersScreen> {
+  final followcontroller = Get.put(FollowController());
   final imageList = [
     Images.person_one,
     Images.person_two,
@@ -41,106 +47,174 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: colorWhite,
-          foregroundColor: colorBlack,
-          title: Text('Search Members'),
-          leading: Padding(
-            padding: const EdgeInsets.all(13.0),
-            child: BackButton2(),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: colorWhite,
+        foregroundColor: colorBlack,
+        title: Text('Search Members'),
+        leading: Padding(
+          padding: const EdgeInsets.all(13.0),
+          child: BackButton2(),
+        ),
+        actions: [
+          InkWell(
+            onTap: () {
+              _showbottomTabSheet(context);
+            },
+            child: Padding(
+              padding: EdgeInsets.only(right: 12.0.w),
+              child: Image.asset(
+                Images.appbar_action,
+                width: 30,
+                height: 30,
+              ),
+            ),
           ),
-          actions: [
-            InkWell(
-              onTap: () {
-                _showbottomTabSheet(context);
-              },
-              child: Padding(
-                padding: EdgeInsets.only(right: 12.0.w),
-                child: Image.asset(
-                  Images.appbar_action,
-                  width: 30,
-                  height: 30,
-                ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 12.h),
+            MyCustomTextField(
+              color: colorWhite,
+              border_color: colorWhite,
+              prefixIcon: Icon(Icons.search),
+              hint: "Search...",
+            ),
+            SizedBox(height: 10.h),
+            Container(
+              height: MediaQuery.of(context).size.height,
+              child: StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance.collection("users").snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<dynamic>> snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: Text("No Data"),
+                    );
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      if (snapshot.data!.docs.length < 1) {
+                        return const Center(
+                          child: Text("No user Available"),
+                        );
+                      }
+                      var ids = snapshot.data!.docs[index].id;
+
+                      return StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(ids)
+                            .collection("users")
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot<dynamic>> snapshot1) {
+                          if (!snapshot1.hasData) {
+                            return const Center(
+                              child: Text("No data"),
+                            );
+                          }
+                          if (snapshot1.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator.adaptive(),
+                            );
+                          }
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: snapshot1.data!.docs.length,
+                            itemBuilder: (context, index1) {
+                              if (snapshot.data!.docs.length < 1) {
+                                return const Center(
+                                  child: Text("No user Available"),
+                                );
+                              }
+                              var data = snapshot1.data!.docs[index1].data();
+                              print("Follow page Data");
+                              print(data);
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: NetworkImage(data["image"]),
+                                ),
+                                title: Text(
+                                  data["name"],
+                                  style: TextStyle(fontSize: 20.sp),
+                                ),
+                                subtitle: Text(
+                                  data["email"],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 14.sp),
+                                ),
+                                trailing: MaterialButton(
+                                  height: 35.h,
+                                  color: appMainColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(30.0)),
+                                  onPressed: () {
+                                    followcontroller.getTopicFollow();
+                                    _showBottomSheet(context, data);
+                                  },
+                                  child: const Text(
+                                    'Follow',
+                                    style: TextStyle(color: colorWhite),
+                                  ),
+                                ),
+                                onTap: () {
+                                  print("object");
+                                  setState(
+                                    () {
+                                      DraggableScrollableSheet(
+                                        builder: (BuildContext context,
+                                            ScrollController scrollController) {
+                                          return Container(
+                                            color: Colors.blue[100],
+                                            child: ListView.builder(
+                                              controller: scrollController,
+                                              itemCount: 25,
+                                              itemBuilder:
+                                                  (BuildContext context,
+                                                      int index) {
+                                                return ListTile(
+                                                    title: Text('Item $index'));
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 12.h),
-              MyCustomTextField(
-                color: colorWhite,
-                border_color: colorWhite,
-                prefixIcon: Icon(Icons.search),
-                hint: "Search...",
-              ),
-              SizedBox(height: 10.h),
-              Container(
-                height: MediaQuery.of(context).size.height,
-                child: ListView.builder(
-                    itemCount: imageList.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: AssetImage(imageList[index]),
-                        ),
-                        title: Text(
-                          title_text[index],
-                          style: TextStyle(fontSize: 20.sp),
-                        ),
-                        subtitle: Text(
-                          descrption_text[index],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 14.sp),
-                        ),
-                        trailing: MaterialButton(
-                          height: 35.h,
-                          color: appMainColor,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0)),
-                          onPressed: () {
-                            _showBottomSheet(context);
-                          },
-                          child: Text(
-                            'Follow',
-                            style: TextStyle(color: colorWhite),
-                          ),
-                        ),
-                        onTap: () {
-                          print("object");
-                          setState(() {
-                            DraggableScrollableSheet(
-                              builder: (BuildContext context,
-                                  ScrollController scrollController) {
-                                return Container(
-                                  color: Colors.blue[100],
-                                  child: ListView.builder(
-                                    controller: scrollController,
-                                    itemCount: 25,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return ListTile(
-                                          title: Text('Item $index'));
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                          });
-                        },
-                      );
-                    }),
-              ),
-            ],
-          ),
-        ));
+      ),
+    );
   }
 }
 
-void _showBottomSheet(BuildContext context) {
+void _showBottomSheet(BuildContext context, data) {
+  FollowController _followcontroller = Get.put(FollowController());
   showModalBottomSheet(
     isScrollControlled: true,
     context: context,
@@ -158,164 +232,242 @@ void _showBottomSheet(BuildContext context) {
         bottom: 30.h,
         // top: 8,
       ),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '     ',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Image.asset(
-              Images.bottom_top_panal,
-              width: 40.w,
-            ),
-            Container(
-                width: 30.w,
-                height: 30.h,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Icon(Icons.close, color: colorBlack),
-                  backgroundColor: colorWhite,
-                )),
-          ],
-        ),
-        SizedBox(height: 20.h),
-        CircleAvatar(
-          radius: 50.r,
-          backgroundImage: AssetImage(Images.person_one),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Kathrin Ava',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.location_on, color: blackColor.withOpacity(0.5)),
-            Text(
-              '12 ST Down town NY',
-              style: TextStyle(
-                  fontSize: 16.sp, color: blackColor.withOpacity(0.5)),
-            ),
-          ],
-        ),
-        SizedBox(height: 10.h),
-        MudasirButton(
-          width: 258.w,
-          height: 52.h,
-          mergin: EdgeInsets.zero,
-          colorss: appMainColor,
-          child: Text(
-            'Follow',
-            style: TextStyle(
-              color: colorWhite,
-              fontSize: 25.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          width: double.infinity.w,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Topics',
-            style: TextStyle(
-              fontSize: 18.sp,
-              color: blackColor.withOpacity(0.5),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          height: 40.h,
-          width: 351.w,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30.r),
-            color: Color(0xffFAFAFA),
-          ),
-          child: Center(
-            child: Text(
-              'Climate change Sustainability',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          height: 40.h,
-          width: 351.w,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30.r),
-            color: Color(0xffFAFAFA),
-          ),
-          child: Center(
-            child: Text(
-              'Social issues & Human Rights',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          height: 40.h,
-          width: 351.w,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30.r),
-            color: Color(0xffFAFAFA),
-          ),
-          child: Center(
-            child: Text(
-              'Healthy living',
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          width: double.infinity.w,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'About me',
-            style: TextStyle(
-              fontSize: 18.sp,
-              color: blackColor.withOpacity(0.5),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Container(
-          width: double.infinity.w,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.',
-            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w300),
-          ),
-        ),
-      ]),
+      child: GetBuilder<FollowController>(
+          init: FollowController(),
+          builder: (controller) {
+            return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '     ',
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Image.asset(
+                        Images.bottom_top_panal,
+                        width: 40.w,
+                      ),
+                      Container(
+                          width: 30.w,
+                          height: 30.h,
+                          child: FloatingActionButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            backgroundColor: colorWhite,
+                            child: const Icon(Icons.close, color: colorBlack),
+                          )),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  CircleAvatar(
+                    radius: 50.r,
+                    backgroundImage: NetworkImage(
+                      data["image"],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      data["name"],
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on,
+                          color: blackColor.withOpacity(0.5)),
+                      Text(
+                        data["location"],
+                        style: TextStyle(
+                            fontSize: 16.sp,
+                            color: blackColor.withOpacity(0.5)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  controller.isSelected
+                      ? InkWell(
+                          onTap: () {
+                            controller.toogle();
+                            final currentUser =
+                                FirebaseAuth.instance.currentUser!.email;
+                            print("iam tapped");
+                            CollectionReference follow = FirebaseFirestore
+                                .instance
+                                .collection('FollowedUser');
+                            follow
+                                .doc(currentUser)
+                                .collection("FollowedUser")
+                                .add({
+                              "name": data["name"],
+                              "email": data["email"],
+                              "image": data["image"],
+                              "location": data["location"],
+                            }).then(
+                              (value) {
+                                follow.doc(currentUser).set({
+                                  "email": currentUser.toString(),
+                                });
+                                controller.id = value.id;
+                                follow
+                                    .doc(currentUser)
+                                    .collection("FollowedUser")
+                                    .doc(controller.id)
+                                    .update({
+                                  "userId": currentUser,
+                                  "postId": controller.id,
+                                }).then(
+                                  (value1) {
+
+                                    if (kDebugMode) {
+                                      print("user followed successful");
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          child: MudasirButton(
+                            onPressedbtn: () {},
+                            width: 258.w,
+                            height: 52.h,
+                            mergin: EdgeInsets.zero,
+                            colorss: appMainColor,
+                            child: Text(
+                              'Follow',
+                              style: TextStyle(
+                                color: colorWhite,
+                                fontSize: 25.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        )
+                      : InkWell(
+                          onTap: () {
+                            controller.toogle();
+                            final currentUser =
+                                FirebaseAuth.instance.currentUser!.email;
+                            FirebaseFirestore.instance
+                                .collection("FollowedUser")
+                                .doc(currentUser)
+                                .collection("FollowedUser")
+                                .doc(controller.id)
+                                .delete()
+                                .then((doc)  {
+
+                                      print("Document deleted");
+                                    },
+                                     onError: (e) => print("Error updating document $e"),
+                                    );
+                          },
+                          child: MudasirButton(
+                            onPressedbtn: () {},
+                            width: 258.w,
+                            height: 52.h,
+                            mergin: EdgeInsets.zero,
+                            colorss: appMainColor,
+                            child: Text(
+                              'Followed',
+                              style: TextStyle(
+                                color: colorWhite,
+                                fontSize: 25.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                  SizedBox(height: 10.h),
+                  InkWell(
+                    onTap: () {},
+                    child: MudasirButton(
+                      width: 258.w,
+                      height: 52.h,
+                      mergin: EdgeInsets.zero,
+                      colorss: appMainColor,
+                      child: Text(
+                        'chat',
+                        style: TextStyle(
+                          color: colorWhite,
+                          fontSize: 25.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    width: double.infinity.w,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Topics',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        color: blackColor.withOpacity(0.5),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    height: 100,
+                    child: ListView.builder(
+                      itemCount: controller.follow!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          height: 40.h,
+                          width: 351.w,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.r),
+                            color: Color(0xffFAFAFA),
+                          ),
+                          child: Center(
+                            child: Text(
+                              controller.follow![index].toString(),
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity.w,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'About me',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        color: blackColor.withOpacity(0.5),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    width: double.infinity.w,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.',
+                      style: TextStyle(
+                          fontSize: 14.sp, fontWeight: FontWeight.w300),
+                    ),
+                  ),
+                ]);
+          }),
     ),
   );
 }
@@ -389,8 +541,9 @@ void _showbottomTabSheet(BuildContext context) {
                                 onPressed: () {
                                   Navigator.pop(context);
                                 },
-                                child: Icon(Icons.close, color: colorBlack),
                                 backgroundColor: colorWhite,
+                                child:
+                                    const Icon(Icons.close, color: colorBlack),
                               )),
                         ],
                       ),

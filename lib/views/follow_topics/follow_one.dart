@@ -1,9 +1,12 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controller/follow_topic/follow_topic_controller.dart';
 import '../../utils/colors_resources.dart';
@@ -195,7 +198,34 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
                 height: 20.h,
               ),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final user = FirebaseAuth.instance.currentUser!.email;
+                  print("iam tapped");
+                  CollectionReference users =
+                  FirebaseFirestore.instance.collection('FollowedUser');
+                  await users.doc(user).collection("FollowedUser").add({
+                    "email":user,
+                    "name": prefs.getString('name'),
+                    "image": prefs.getString('image'),
+                    "email1": prefs.getString('email'),
+                    "location":prefs.getString("location"),
+                    "userId": "",
+                    "postId": "",
+
+                  }).then((value)
+                  {
+                    var id = value.id;
+                    users.doc(user).set({
+                      "email":user,
+                    }).then((value)
+                    {
+                      users.doc(user).collection("FollowedUser").doc(id).update({
+                        "userId": user,
+                        "postId":id,
+                      });
+                    });
+                  });
                   Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => BottomNavBar()));
                   print("rrrrrrrrrrrrrrrrrrrrr");

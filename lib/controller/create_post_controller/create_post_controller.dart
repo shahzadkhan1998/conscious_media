@@ -118,14 +118,17 @@ class CreatePostController extends GetxController {
       "userid": prefs.getString('email'),
       "postid": postid,
     }).then((value) {
-      users.doc(email).set({
-        "email": email.toString(),
-      });
-
       postid = value.id;
+      users.doc(email).set({
+
+        "email": email.toString(),
+
+      }).then((value) {});
       updateAllPostId();
+    }).then((value) {
+      print("Post is stored");
     });
-    print("Post is stored");
+
   }
 
   /////// update post id ////////
@@ -161,7 +164,7 @@ class CreatePostController extends GetxController {
       "userimage": userimage,
       "postid": "",
     }).then((value) async {
-      users.doc(user).update({
+      users.doc(user).set({
         "email": user.toString(),
       });
       postidu = value.id;
@@ -177,10 +180,18 @@ class CreatePostController extends GetxController {
   
     CollectionReference users =
         FirebaseFirestore.instance.collection('UserPost');
-    users.doc(currentuser).collection("UserPost").doc(postid).update({
-      "postid": postid,
+    users.doc(currentuser).collection("UserPost").doc(postidu).update({
+      "postid": postidu,
+    }).then((value) {
+      print("$postidu");
+      print("post Success");
+    }).then((value)
+    {
+      users.doc(currentuser).set({
+        "email":currentuser,
+      });
     });
-    print("$postid");
+
     update();
   }
 

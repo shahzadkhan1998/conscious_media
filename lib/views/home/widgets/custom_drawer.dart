@@ -11,6 +11,7 @@ import '../../auth/login.dart';
 import '../../bottom_nav_bar.dart';
 import '../../follow_topics/follow_one.dart';
 import '../../my_account/my_account.dart';
+import '../../onboarding/onboarding.dart';
 import '../../search_members/search_member.dart';
 import '../HomePageScreen.dart';
 
@@ -111,7 +112,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       child: InkWell(
                           onTap: () {
                             setState(() {
-                              showPage = EditProfileScreen();
+                              showPage = const EditProfileScreen();
                               pageIndex = 4;
                               Get.to(BottomNavBar());
                             });
@@ -134,12 +135,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   children: [
                     InkWell(
                         onTap: () async{
-                          final FirebaseAuth _firebaseAuth = await FirebaseAuth.instance;
+                          final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
                          await _firebaseAuth.signOut();
                           setState(() {
 
                           });
-                          Get.to(()=> SignInScreen());
+                          Get.to(()=>OnbordingScreen());
                         },
                         child: CommonText(
                             text: "Log out", text_color: colorGrean)),

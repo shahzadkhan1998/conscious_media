@@ -25,6 +25,7 @@ class ReadPost extends StatefulWidget {
     this.index,
     this.list,
     this.likeList,
+    this.length,
 
     // this.post_icon_button,
     // this.post_like_btn,
@@ -34,7 +35,8 @@ class ReadPost extends StatefulWidget {
     this.post_title_body,
     // this.click_open_video
   }) : super(key: key);
-  final int? index;
+   var index;
+  List? likeList = [];
   List? list = [];
   final String? post_title;
   final String? post_description;
@@ -42,7 +44,8 @@ class ReadPost extends StatefulWidget {
   final Image? post_user_image;
   final String? post_image;
   final String? post_time;
-  List? likeList = [];
+
+  var length;
   // final Function()? post_icon_button;
   // final Function()? post_like_btn;
   // final Function()? post_comments_btn;
@@ -58,12 +61,12 @@ class _ReadPostState extends State<ReadPost> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!.email;
-     print('current user id:');
-     print(user.toString());
-    // print("---------------------");
-    // print(widget.likeList);
-    // print("---------------------");
-    // print(widget.list!.length);
+   // print('current user id:');
+    //print(user.toString());
+   //  print("---------------------");
+   //  print(widget.likeList);
+   //  print("---------------------");
+   //  print(widget.list!.length);
 
     // final currentuser = FirebaseAuth.instance.currentUser;
     // var uid = currentuser!.uid;
@@ -72,218 +75,205 @@ class _ReadPostState extends State<ReadPost> {
     print(widget.list!.contains(user));
 
     return GetBuilder<ShowPostController>(
-        init: ShowPostController(),
-        builder: (value) {
-          return Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: 20.w,
-                        backgroundImage: AssetImage(Images.person_one),
-                      ),
-                      SizedBox(
-                        width: 10.w,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                widget.post_title ?? 'John Doe',
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.bold,
+          init: ShowPostController(),
+          builder: (value) {
+            return Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 20.w,
+                          backgroundImage: AssetImage(Images.person_one),
+                        ),
+                        SizedBox(
+                          width: 10.w,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  widget.post_title ?? 'John Doe',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 5.w),
-                              Text(
-                                "1 h",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12.sp,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  "1 h",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12.sp,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            widget.post_description ?? 'Healthy living',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey,
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Icon(Icons.more_vert)
-                ],
-              ),
-              SizedBox(
-                height: 10.h,
-              ),
-              Container(
-                width: double.infinity.w,
-                child: Text(
-                    widget.post_title_body ??
-                        "Healthy living (Lorem ipsum dolor set amet)",
-                    style: TextStyle(fontSize: 14.sp),
-                    textAlign: TextAlign.start),
-              ),
-              SizedBox(
-                height: 10.h,
-              ),
-              widget.post_image != null
-                  ? Container(
-                      decoration: BoxDecoration(
+                            Text(
+                              widget.post_description ?? 'Healthy living',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Icon(Icons.more_vert)
+                  ],
+                ),
+                SizedBox(
+                  height: 10.h,
+                ),
+                Container(
+                  width: double.infinity.w,
+                  child: Text(
+                      widget.post_title_body ??
+                          "Healthy living (Lorem ipsum dolor set amet)",
+                      style: TextStyle(fontSize: 14.sp),
+                      textAlign: TextAlign.start),
+                ),
+                SizedBox(
+                  height: 10.h,
+                ),
+                widget.post_image != null
+                    ? Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.w),
+                        ),
+                        child: Image.network(
+                          height: 158.h,
+                          widget.post_image.toString(),
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width,
+                        ),
+                      )
+                    : ClipRRect(
                         borderRadius: BorderRadius.circular(10.w),
-                      ),
-                      child: Image.network(
-                        height: 158.h,
-                        widget.post_image.toString(),
-                        fit: BoxFit.cover,
-                        width: MediaQuery.of(context).size.width,
-                      ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(10.w),
-                      child: const Center(child: Text("No Image"))),
-              SizedBox(height: 10.h),
-              Row(
-                children: [
-                  widget.list!.contains(user) ?
-                  InkWell(
-                    onTap: () async {
-                      final currentuser = FirebaseAuth.instance.currentUser;
-                      var email = currentuser!.email;
-                      print(widget.index);
-                      var currentpostid =
-                          widget.likeList![widget.index!]["postid"];
-                      var currentUserid =
-                          widget.likeList![widget.index!]["userid"];
-                      print("My Current User who did this post : " +
-                          currentUserid);
-                      print("My Current Post id is : " + currentpostid);
-                      print(widget.list);
-                      print(user);
-                      widget.list!.remove(user);
-                      CollectionReference users = FirebaseFirestore
-                          .instance
-                          .collection('AllPost');
-                      users
-                          .doc(currentUserid)
-                          .collection("AllPost")
-                          .doc(currentpostid).update({
-                        "like":FieldValue.arrayRemove([email]),
-                      });
-                      setState(() {
+                        child: const Center(child: Text("No Image"))),
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    widget.list!.contains(user)
+                        ? InkWell(
+                            onTap: () async {
+                              final currentuser =
+                                  FirebaseAuth.instance.currentUser;
+                              var email = currentuser!.email;
+                              print(widget.index);
+                              var currentpostid =
+                                  widget.likeList![widget.index!]["postid"];
+                              var currentUserid =
+                                  widget.likeList![widget.index!]["userid"];
+                              print("My Current User who did this post : " +
+                                  currentUserid);
+                              print("My Current Post id is : " + currentpostid);
+                              print(widget.list);
+                              print(user);
+                              widget.list!.remove(user);
+                              CollectionReference users = FirebaseFirestore
+                                  .instance
+                                  .collection('AllPost');
+                              users
+                                  .doc(currentUserid)
+                                  .collection("AllPost")
+                                  .doc(currentpostid)
+                                  .update({
+                                "like": FieldValue.arrayRemove([email]),
+                              });
+                              setState(() {});
+                            },
+                            child: Icon(Icons.favorite),
+                          )
+                        : InkWell(
+                            onTap: () async {
+                              final currentuser =
+                                  FirebaseAuth.instance.currentUser;
+                              var email = currentuser!.email;
+                              print(widget.index);
+                              var currentpostid =
+                                  widget.likeList![widget.index!]["postid"];
+                              var currentUserid =
+                                  widget.likeList![widget.index!]["userid"];
+                              print("My Current User who did this post : " +
+                                  currentUserid);
+                              print("My Current Post id is : " + currentpostid);
 
-                      });
+                              print(widget.list);
+                              print(user);
+                              widget.list!.add(user);
+                              CollectionReference users = FirebaseFirestore
+                                  .instance
+                                  .collection('AllPost');
+                              users
+                                  .doc(currentUserid)
+                                  .collection("AllPost")
+                                  .doc(currentpostid)
+                                  .update({
+                                "like": widget.list!,
+                              });
+                              setState(() {});
+                            },
+                            child: const Icon(Icons.favorite_border),
+                          ),
+                    SizedBox(
+                      width: 4.w,
+                    ),
+                    InkWell(onTap: () {}, child: const Text("Likes  ")),
+                    SizedBox(
+                      width: 4.w,
+                    ),
+                    Text(widget.length.toString(),
+                        style: const TextStyle(color: colorTextGray)),
+                    SizedBox(
+                      width: 40.w,
+                    ),
+                    Image.asset(
+                      Images.chats,
+                      height: 20.h,
+                      width: 20.w,
+                    ),
+                    SizedBox(
+                      width: 15.w,
+                    ),
+                    InkWell(
+                        onTap: () {
+                          print("Tapped");
+                          var currentpostid =
+                              widget.likeList![widget.index!]["postid"];
+                          var currentUserid =
+                              widget.likeList![widget.index!]["userid"];
+                          print("My Current User who did this post : " +
+                              currentUserid);
+                          print(
+                            "My Current Post id is : " + currentpostid,
+                          );
+                          CommentsTextFieldBottomSheet(context, widget.index,
+                              currentpostid, currentUserid);
+                        },
+                        child: const Text("Comment  ")),
+                    SizedBox(
+                      width: 4.w,
+                    ),
+                    Text(
+                      value.comment_count.toString()== null ? "0":value.comment_count.toString(),
+                      style: TextStyle(color: colorTextGray),
+                    ),
+                  ],
+                ),
+                Divider()
+              ],
+            );
+          });
 
-                    },
-                    child:Icon(Icons.favorite),
-                  ):InkWell(
-                    onTap: () async {
-                      final currentuser = FirebaseAuth.instance.currentUser;
-                      var email = currentuser!.email;
-                      print(widget.index);
-                      var currentpostid =
-                      widget.likeList![widget.index!]["postid"];
-                      var currentUserid =
-                      widget.likeList![widget.index!]["userid"];
-                      print("My Current User who did this post : " +
-                          currentUserid);
-                      print("My Current Post id is : " + currentpostid);
-
-                      print(widget.list);
-                      print(user);
-                      widget.list!.add(user);
-                      CollectionReference users = FirebaseFirestore
-                          .instance
-                          .collection('AllPost');
-                      users
-                          .doc(currentUserid)
-                          .collection("AllPost")
-                          .doc(currentpostid).update({
-                            "like":widget.list!,
-                      });
-                      setState(() {
-
-                      });
-
-
-                    },
-                    child:Icon(Icons.favorite_border),
-                  ),
-                  SizedBox(
-                    width: 4.w,
-                  ),
-                  InkWell(
-                      onTap: () {
-                        //// Getting Current postid and postuserid /////
-                        // value.currentpostid = widget.likeList![widget.index!]
-                        //         ["postid"]
-                        //     .toString();
-                        // value.currentUserid = widget.likeList![widget.index!]
-                        //         ["userid"]
-                        //     .toString();
-                        // print("My Current User who did this post : " +
-                        //     value.currentUserid);
-                        // print("My Current Post id is : " + value.currentpostid);
-                        // value.handleLikeStatus();
-                        // value.handleLikeStatus();
-                      },
-                      child: const Text("Likes  ")),
-                  SizedBox(
-                    width: 4.w,
-                  ),
-                  Text(value.likechecklist.length.toString(),
-                      style: const TextStyle(color: colorTextGray)),
-                  SizedBox(
-                    width: 40.w,
-                  ),
-                  Image.asset(
-                    Images.chats,
-                    height: 20.h,
-                    width: 20.w,
-                  ),
-                  SizedBox(
-                    width: 15.w,
-                  ),
-                  InkWell(
-                      onTap: () {
-                        print("Tapped");
-                        var currentpostid =
-                        widget.likeList![widget.index!]["postid"];
-                        var currentUserid =
-                        widget.likeList![widget.index!]["userid"];
-                        print("My Current User who did this post : " +
-                            currentUserid);
-                        print("My Current Post id is : " + currentpostid,);
-                        CommentsTextFieldBottomSheet(context, widget.index,currentpostid,currentUserid);
-                      },
-                      child: const Text("Comment  ")),
-                  SizedBox(
-                    width: 4.w,
-                  ),
-                  Text(
-                    widget.post_comment_count ?? "43",
-                    style: TextStyle(color: colorTextGray),
-                  ),
-                ],
-              ),
-              Divider()
-            ],
-          );
-        });
   }
 }

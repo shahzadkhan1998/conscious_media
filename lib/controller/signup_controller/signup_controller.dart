@@ -39,13 +39,13 @@ class SignUpController extends GetxController
 
   }
   @override
-  void onReady() {
+  void onReady() async {
     // TODO: implement onReady
     super.onReady();
-    Future.delayed(Duration(seconds: 3),(){
-      getUserLocation();
-      convertToAdress();
-    });
+
+      await getUserLocation();
+       await convertToAdress();
+
 
   }
   @override
@@ -62,39 +62,33 @@ class SignUpController extends GetxController
   ////// SignUp Function //////////
  Registor() async
  {
-   try {
-     final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-       email: email.text,
-       password: password.text,
-     );
-   } on FirebaseAuthException catch (e) {
-     if (e.code == 'weak-password') {
-       print('The password provided is too weak.');
-     } else if (e.code == 'email-already-in-use') {
-       print('The account already exists for that email.');
+
+     try {
+       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+           email: email.text.trim(),
+           password: password.text.trim(),
+       );
+     } on FirebaseAuthException catch (e) {
+       if (e.code == 'weak-password') {
+         print('The password provided is too weak.');
+       } else if (e.code == 'email-already-in-use') {
+         print('The account already exists for that email.');
+       }
+     } catch (e) {
+       print(e);
      }
-   } catch (e) {
-     print(e);
-   }
-   /// check state of Signin or out
-   Future.delayed(const Duration(seconds: 1), () {
+
      FirebaseAuth.instance
-         .authStateChanges()
+         .userChanges()
          .listen((User? user) {
        if (user == null) {
          print('User is currently signed out!');
-       }
+       } else {
+        storeUserData();
+        Get.to(()=>FollowTopicScreen());
          print('User is signed in!');
-         var data = storeUserData();
-         if(data != null)
-           {
-             Get.to(()=>const FollowTopicScreen());
-           }
-
-
+       }
      });
-   });
-
  }
 //Store to Cloud Firestore
  storeUserData() async
@@ -232,7 +226,7 @@ class SignUpController extends GetxController
     }
   }
 
-  void convertToAdress() async {
+   convertToAdress() async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat!, long!).then((placemarks) {
 
       var output = 'No results found.';
