@@ -114,10 +114,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
                             );
                           }
                           var followeduser = snapshot.data!.docs[index].data();
-                            var Users = snapshot.data!.docs[index]["email"];
-                            print("Follow User ids is .....");
-                            print(Users);
-                            print("....................");
+                          var Users = snapshot.data!.docs[index]["email"];
+                          print("Follow User ids is .....");
+                          print(Users);
+                          print("....................");
                           print(".............");
                           print("FollowedUser");
                           print(followeduser);
@@ -191,10 +191,12 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                                 .collection("AllPost")
                                                 .doc(ids)
                                                 .collection("AllPost")
-                                                .where("topic",whereIn: followedtopic)
+                                                .where("topic",
+                                                    whereIn: followedtopic)
                                                 .snapshots(),
                                             builder: (BuildContext context,
-                                                AsyncSnapshot<QuerySnapshot<dynamic>>
+                                                AsyncSnapshot<
+                                                        QuerySnapshot<dynamic>>
                                                     snapshot3) {
                                               if (!snapshot3.hasData) {
                                                 return const Center(
@@ -211,60 +213,165 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                               }
                                               return ListView.builder(
                                                 shrinkWrap: true,
-                                                itemCount: snapshot3.data!.docs.length,
-                                                itemBuilder: (BuildContext context, int index3)
-                                                {
-                                                  var allPost = snapshot3.data!.docs[index3].data();
+                                                itemCount:
+                                                    snapshot3.data!.docs.length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index3) {
+                                                  var allPostList = [];
+                                                  var allPost = snapshot3
+                                                      .data!.docs[index3]
+                                                      .data();
+                                                  allPostList.add(allPost);
                                                   print("...................");
-                                                  print("All Post is given below");
-                                                  print(allPost);
-                                                  print(".......................");
+                                                  print(
+                                                      "All Post is given below");
+                                                  print(allPostList);
+                                                  print(
+                                                      ".......................");
                                                   List topiclist = [];
-                                                  var topics  = snapshot3.data!.docs[index3]["topic"];
+                                                  var topics = snapshot3.data!
+                                                      .docs[index3]["topic"];
                                                   topiclist.add(topics);
-                                                  print("***********************");
+                                                  print(
+                                                      "***********************");
                                                   print("Topics ........");
                                                   print(topiclist);
-                                                  print("************************");
+                                                  print(
+                                                      "************************");
                                                   print("\n\n");
 
-
-
-
                                                   return Container(
-                                                    child: StreamBuilder<QuerySnapshot>(
-                                                      stream: FirebaseFirestore.instance.collection("AllPost").doc(Users).collection("AllPost").snapshots(),
-                                                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<dynamic>> snapshot4)
-                                                      {
-                                                        if(!snapshot4.hasData)
-                                                          {
-                                                            return const Center(
-                                                              child: Text("No Data"),
-                                                            );
-                                                          }
-                                                        if(snapshot4.connectionState == ConnectionState.waiting)
-                                                          {
-                                                            return const Center(
-                                                              child: CircularProgressIndicator.adaptive(),
-                                                            );
-                                                          }
+                                                    child: StreamBuilder<
+                                                        QuerySnapshot>(
+                                                      stream: FirebaseFirestore
+                                                          .instance
+                                                          .collection("AllPost")
+                                                          .doc(Users)
+                                                          .collection("AllPost")
+                                                          .snapshots(),
+                                                      builder: (BuildContext
+                                                              context,
+                                                          AsyncSnapshot<
+                                                                  QuerySnapshot<
+                                                                      dynamic>>
+                                                              snapshot4) {
+                                                        if (!snapshot4
+                                                            .hasData) {
+                                                          return const Center(
+                                                            child:
+                                                                Text("No Data"),
+                                                          );
+                                                        }
+                                                        if (snapshot4
+                                                                .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return const Center(
+                                                            child:
+                                                                CircularProgressIndicator
+                                                                    .adaptive(),
+                                                          );
+                                                        }
                                                         return ListView.builder(
                                                           shrinkWrap: true,
-                                                          itemCount: snapshot4.data!.docs.length,
-                                                          itemBuilder: (BuildContext context, int index4)
-                                                          {
-                                                            var FollowedUserData = snapshot4.data!.docs[index4].data();
+                                                          itemCount: snapshot4
+                                                              .data!
+                                                              .docs
+                                                              .length,
+                                                          itemBuilder:
+                                                              (BuildContext
+                                                                      context,
+                                                                  int index4) {
+                                                            List
+                                                                FollowedUserDataList =
+                                                                [];
+                                                            var FollowedUserData =
+                                                                snapshot4
+                                                                    .data!
+                                                                    .docs[
+                                                                        index4]
+                                                                    .data();
+                                                            FollowedUserDataList
+                                                                .add(
+                                                                    FollowedUserData);
 
-                                                            print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-                                                            print("FollowedUserData ...........");
-                                                            print(FollowedUserData);
-                                                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                                                            return Container();
+                                                            print(
+                                                                "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                                                            print(
+                                                                "FollowedUserData ...........");
+                                                            print(
+                                                                FollowedUserDataList);
+                                                            print(
+                                                                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-                                                          },);
-                                                      },),
+                                                            print("\n\n\n \n");
+                                                            var newList =
+                                                                FollowedUserDataList +
+                                                                    allPostList;
+
+                                                            print(
+                                                                ".............................");
+                                                            print(
+                                                                "The Combine ListData is followeduser and followtopic........");
+                                                            print(newList);
+                                                            print(
+                                                                newList.length);
+                                                            print(
+                                                                "............................");
+
+                                                            print("\n\n\n");
+                                                            List likes = snapshot4
+                                                                    .data!
+                                                                    .docs[index4]
+                                                                [
+                                                                "like"] as List;
+
+                                                            print(
+                                                                "likes as:$likes");
+
+                                                            List list = [];
+                                                            for (var key
+                                                                in likes) {
+                                                              list.add(key);
+                                                            }
+                                                            print(list.length);
+                                                            print(
+                                                                "....................");
+                                                            print(
+                                                                "...........Like Users");
+
+                                                            print(list);
+                                                            print(
+                                                                "...................");
+
+                                                            var likelength =
+                                                                list.length;
+
+                                                            return ReadPost(
+                                                              index: index4,
+                                                              post_title:
+                                                                  newList[index4]
+                                                                      ["title"],
+                                                              post_description:
+                                                                  newList[index4]
+                                                                      [
+                                                                      "description"],
+                                                              post_image:
+                                                                  newList[index4]
+                                                                      ["image"],
+                                                              post_title_body:newList[index4]["description"],
+                                                              list: list,
+                                                              likeList:
+                                                                  allPostList,
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                                    ),
                                                   );
-                                                },);
+                                                },
+                                              );
                                             },
                                           ),
                                         );
