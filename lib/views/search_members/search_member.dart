@@ -26,6 +26,7 @@ class SearchMembersScreen extends StatefulWidget {
 
 class _SearchMembersScreenState extends State<SearchMembersScreen> {
   final followcontroller = Get.put(FollowController());
+
   final imageList = [
     Images.person_one,
     Images.person_two,
@@ -46,14 +47,15 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
   ];
   @override
   Widget build(BuildContext context) {
+    List list  = [];
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: colorWhite,
         foregroundColor: colorBlack,
-        title: Text('Search Members'),
-        leading: Padding(
-          padding: const EdgeInsets.all(13.0),
+        title: const Text('Search Members'),
+        leading: const Padding(
+          padding: EdgeInsets.all(13.0),
           child: BackButton2(),
         ),
         actions: [
@@ -151,26 +153,46 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
                                   style: TextStyle(fontSize: 20.sp),
                                 ),
                                 subtitle: Text(
-                                  data["email"],
+                                  data["location"],
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(fontSize: 14.sp),
                                 ),
-                                trailing: MaterialButton(
+                                trailing: followcontroller.followedList.contains(data["email"])?
+                                MaterialButton(
                                   height: 35.h,
                                   color: appMainColor,
                                   shape: RoundedRectangleBorder(
                                       borderRadius:
-                                          BorderRadius.circular(30.0)),
+                                      BorderRadius.circular(30.0)),
                                   onPressed: () {
-                                    followcontroller.getTopicFollow();
+                                    followcontroller.getTopics();
                                     _showBottomSheet(context, data);
                                   },
+
+                                  child: const Text(
+                                    'Followed',
+                                    style: TextStyle(color: colorWhite),
+                                  ),
+                                ):
+                                MaterialButton(
+                                  height: 35.h,
+                                  color: appMainColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(30.0)),
+                                  onPressed: () {
+                                    followcontroller.getTopics();
+                                    _showBottomSheet(context, data);
+                                  },
+
                                   child: const Text(
                                     'Follow',
                                     style: TextStyle(color: colorWhite),
                                   ),
                                 ),
+
+
                                 onTap: () {
                                   print("object");
                                   setState(
@@ -215,6 +237,10 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
 
 void _showBottomSheet(BuildContext context, data) {
   FollowController _followcontroller = Get.put(FollowController());
+  List list = [];
+  var followedList = data["FollowedUser"];
+  print("Followed List");
+  print(followedList);
   showModalBottomSheet(
     isScrollControlled: true,
     context: context,
@@ -295,47 +321,20 @@ void _showBottomSheet(BuildContext context, data) {
                     ],
                   ),
                   SizedBox(height: 10.h),
-                  controller.isSelected
+                  controller.followedList.contains(data["email"])
                       ? InkWell(
                           onTap: () {
+                            list = [data["email"]];
+                            followedList.add(list);
+
                             controller.toogle();
                             final currentUser =
                                 FirebaseAuth.instance.currentUser!.email;
                             print("iam tapped");
-                            CollectionReference follow = FirebaseFirestore
-                                .instance
-                                .collection('FollowedUser');
-                            follow
-                                .doc(currentUser)
-                                .collection("FollowedUser")
-                                .add({
-                              "name": data["name"],
-                              "email": data["email"],
-                              "image": data["image"],
-                              "location": data["location"],
-                            }).then(
-                              (value) {
-                                follow.doc(currentUser).set({
-                                  "email": currentUser.toString(),
-                                });
-                                controller.id = value.id;
-                                follow
-                                    .doc(currentUser)
-                                    .collection("FollowedUser")
-                                    .doc(controller.id)
-                                    .update({
-                                  "userId": currentUser,
-                                  "postId": controller.id,
-                                }).then(
-                                  (value1) {
-
-                                    if (kDebugMode) {
-                                      print("user followed successful");
-                                    }
-                                  },
-                                );
-                              },
-                            );
+                            CollectionReference users = FirebaseFirestore.instance.collection("users");
+                            users.doc(currentUser).collection("users").doc(controller.id).update({
+                              "FollowedUser":list
+                            });
                           },
                           child: MudasirButton(
                             onPressedbtn: () {},
@@ -344,7 +343,7 @@ void _showBottomSheet(BuildContext context, data) {
                             mergin: EdgeInsets.zero,
                             colorss: appMainColor,
                             child: Text(
-                              'Follow',
+                              'Followed',
                               style: TextStyle(
                                 color: colorWhite,
                                 fontSize: 25.sp,
@@ -355,21 +354,40 @@ void _showBottomSheet(BuildContext context, data) {
                         )
                       : InkWell(
                           onTap: () {
-                            controller.toogle();
+
+
+                             list = [data["email"]];
+
+                            followedList.add(list);
+                            //controller.toogle();
                             final currentUser =
                                 FirebaseAuth.instance.currentUser!.email;
-                            FirebaseFirestore.instance
-                                .collection("FollowedUser")
-                                .doc(currentUser)
-                                .collection("FollowedUser")
-                                .doc(controller.id)
-                                .delete()
-                                .then((doc)  {
+                            print("iam tapped");
+                            CollectionReference users = FirebaseFirestore.instance.collection("users");
+                            users.doc(currentUser).collection("users").doc(controller.id).update({
+                              "FollowedUser":FieldValue.arrayUnion(list),
+                            });
 
-                                      print("Document deleted");
-                                    },
-                                     onError: (e) => print("Error updating document $e"),
-                                    );
+                            // final currentUser =
+                            //     FirebaseAuth.instance.currentUser!.email;
+                            // var list = [currentUser];
+                            // FirebaseFirestore.instance.collection("users").doc(currentUser).collection("users").doc(controller.id).update(
+                            //   {
+                            //     "FollowedUser":FieldValue.arrayRemove(list),
+                            //   }
+                            // );
+                            // FirebaseFirestore.instance
+                                // .collection("FollowedUser")
+                                // .doc(currentUser)
+                                // .collection("FollowedUser")
+                                // .doc(controller.id)
+                                // .delete()
+                                // .then((doc)  {
+                                //
+                                //       print("Document deleted");
+                                //     },
+                                //      onError: (e) => print("Error updating document $e"),
+                                //     );
                           },
                           child: MudasirButton(
                             onPressedbtn: () {},
@@ -378,7 +396,7 @@ void _showBottomSheet(BuildContext context, data) {
                             mergin: EdgeInsets.zero,
                             colorss: appMainColor,
                             child: Text(
-                              'Followed',
+                              'Follow',
                               style: TextStyle(
                                 color: colorWhite,
                                 fontSize: 25.sp,

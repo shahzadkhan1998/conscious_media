@@ -1,5 +1,7 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conscious_media/views/auth/sign_up.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,6 +9,7 @@ import 'package:get/get.dart';
 
 import '../../controller/signin_controller/signin_controller.dart';
 import '../../utils/colors_resources.dart';
+import '../../utils/global_list.dart';
 import '../../utils/images.dart';
 import '../../widgets/my_button.dart';
 import '../../widgets/my_custom_password.dart';
@@ -20,7 +23,28 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+
+
   SignInController _signInController = Get.put(SignInController());
+  getTopicAndFollower()
+  async {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    await FirebaseFirestore.instance.collection("users").doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot)
+    {
+      for(var doc in querySnapshot.docs)
+      {
+        topicsList = doc["selectedTopics"] as List;
+        followedList = doc["FollowedUser"] as List;
+
+      }
+    });
+  }
+  @override
+  void didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    //await getTopicAndFollower();
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(

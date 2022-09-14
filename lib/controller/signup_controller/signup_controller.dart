@@ -17,6 +17,7 @@ class SignUpController extends GetxController
   double? long;
   double? lat;
   String address = "";
+  var id;
 
   // variable Declaration
   // image picker initialization
@@ -84,8 +85,7 @@ class SignUpController extends GetxController
        if (user == null) {
          print('User is currently signed out!');
        } else {
-        storeUserData();
-        Get.to(()=>FollowTopicScreen());
+        storeUserData();;
          print('User is signed in!');
        }
      });
@@ -102,13 +102,24 @@ class SignUpController extends GetxController
      "password":password.text,
      "confirmPassword":confirmPassword.text,
      "image":url,
+     "selectedTopics":"",
+      "id":"",
+      "FollowedUser":[]
    }).then((value) async
    {
+     id = value.id;
      users.doc(email.text).set(
        {
          "email":email.text,
        }
-     );
+     ).then((value1)
+     {
+       users.doc(email.text.trim()).collection("users").doc(id).update({
+         "id":id
+       });
+       Get.to(()=>const FollowTopicScreen(),arguments:id);
+       print("ids is $id");
+     });
      print("Data is Stored");
 
      prefs.setString("name",name.text.trim());
@@ -232,6 +243,7 @@ class SignUpController extends GetxController
       var output = 'No results found.';
       if (placemarks.isNotEmpty) {
         output = placemarks[0].toString();
+        print(output);
       }
       return placemarks;
     });

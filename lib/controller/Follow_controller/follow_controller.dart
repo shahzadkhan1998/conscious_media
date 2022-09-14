@@ -13,6 +13,7 @@ class FollowController extends GetxController
   var follow;
    var isSelected = false;
   var id;
+  List followedList = [];
 
   toogle() {
     isSelected = !isSelected;
@@ -24,7 +25,9 @@ class FollowController extends GetxController
   void onInit() async{
     // TODO: implement onInit
     super.onInit();
-    await getTopicFollow();
+    await getUserId();
+    await getTopics();
+    //await getTopicFollow();
   }
   @override
   void onReady() {
@@ -36,27 +39,59 @@ class FollowController extends GetxController
     // TODO: implement onClose
     super.onClose();
   }
-  ///// follow Topic ////////
-getTopicFollow() async {
-  final currentuser = FirebaseAuth.instance.currentUser;
-  var email = currentuser!.email;
-  await FirebaseFirestore.instance
-      .collection('TopicFollow')
-      .doc(email)
-      .get()
-      .then((value) {
-    update();
-    List alldata = value.data()!["selectedTopics"];
-    update();
-    //print(alldata);
-    update();
-    print("Selected Topics");
-    follow = List<String>.from(alldata);
-    print(follow);
+  // get user id
+  getUserId() async {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentuser)
+        .collection("users")
 
-    update();
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      for (var doc in querySnapshot.docs) {
+        id = doc["id"];
+        followedList = doc["FollowedUser"];
+        print("iD is ...... $id");
+      }
+    });
+  }
+  ///// follow Topic ////////
+// getTopicFollow() async {
+//   final currentuser = FirebaseAuth.instance.currentUser;
+//   var email = currentuser!.email;
+//   await FirebaseFirestore.instance
+//       .collection('TopicFollow')
+//       .doc(email)
+//       .get()
+//       .then((value) {
+//     update();
+//     List alldata = value.data()!["selectedTopics"];
+//     update();
+//     //print(alldata);
+//     update();
+//     print("Selected Topics");
+//     follow = List<String>.from(alldata);
+//     print(follow);
+//
+//     update();
+//   });
+//   update();
+// }
+
+getTopics() async
+{
+  final currentUser = FirebaseAuth.instance.currentUser!.email;
+  FirebaseFirestore.instance.collection("users").doc(currentUser).collection("users").get().then((QuerySnapshot querySnapshot)
+  {
+        for(var doc in querySnapshot.docs)
+          {
+            var alldata = doc["selectedTopics"];
+            follow = List<String>.from(alldata);
+            print("allTOpcs");
+            print(alldata);
+          }
   });
-  update();
 }
 
 ///<<<<<<<<<<<<<Ends<<<<<<<<<<<<<<<<<<<<<<<//

@@ -22,9 +22,11 @@ class CreatePostController extends GetxController {
   var postidu;
   var comments = [];
 
+
   File? image;
   var url;
   var name;
+  var id;
   TextEditingController title = TextEditingController();
   TextEditingController description = TextEditingController();
   TextEditingController topic = TextEditingController();
@@ -34,9 +36,10 @@ class CreatePostController extends GetxController {
     // TODO: implement onInit
 
     super.onInit();
-    getTopicFollow();
+
 
       getCurrentUser();
+      getTopic();
 
   }
 
@@ -45,6 +48,7 @@ class CreatePostController extends GetxController {
     // TODO: implement onReady
     super.onReady();
     getCurrentUser();
+
   }
 
   @override
@@ -68,32 +72,32 @@ class CreatePostController extends GetxController {
         print(doc["name"]);
         name = doc["name"];
         userimage = doc["image"];
+        id = doc["id"];
+        print(id);
+
       });
     });
   }
 
-  /// Get all topic which current user followed
+  /// Get all topic which current
+  //user followed
   /// which topic he Followed///
-  getTopicFollow() async {
-    final currentuser = FirebaseAuth.instance.currentUser;
-    var email = currentuser!.email;
-    await FirebaseFirestore.instance
-        .collection('TopicFollow')
-        .doc(email)
-        .get()
-        .then((value) {
-      print(value.data()!["selectedTopics"].runtimeType);
-      update();
-      List alldata = value.data()!["selectedTopics"];
-      update();
-      print(alldata);
-      update();
-      sList = List<String>.from(alldata);
-      update();
-      print(sList.runtimeType);
+  getTopic()
+  async {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    await FirebaseFirestore.instance.collection("users").doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot)
+    {
+      for(var doc in querySnapshot.docs)
+      {
+        List topicsList = doc["selectedTopics"];
+        sList = List<String>.from(topicsList);;
+
+
+      }
     });
-    update();
   }
+
+
 
   /// Store all Post to firebase
   storeAllPost(topic) async {

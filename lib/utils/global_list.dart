@@ -1,0 +1,2 @@
+var topicsList;
+var followedList;

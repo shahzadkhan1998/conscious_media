@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../controller/create_post_controller/create_post_controller.dart';
 import '../../../controller/showPost_controller/show_post_controller.dart';
 import '../../../utils/colors_resources.dart';
+import '../../../utils/global_list.dart';
 import '../../../utils/images.dart';
 import '../../../widgets/my_button.dart';
 import '../../../widgets/my_custom_textfield.dart';

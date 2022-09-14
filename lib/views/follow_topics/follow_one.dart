@@ -26,6 +26,7 @@ class FollowTopicScreen extends StatefulWidget {
 class _FollowTopicScreenState extends State<FollowTopicScreen> {
   var list = [];
   int? tapindex;
+
   final FollowTopic _followTopic = Get.put(FollowTopic());
   final imageList = [
     Images.follow_1,
@@ -60,7 +61,7 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
   }
   @override
   Widget build(BuildContext context) {
-
+    final FollowTopic _followTopic = Get.put(FollowTopic());
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -168,7 +169,8 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
                                               }
                                               list.add(text);
                                               print(list);
-                                              _followTopic.StoreTopicFollow(list);
+                                              // _followTopic.getdoucmentiduser();
+                                               _followTopic.StoreTopicFollow(list);
 
                                             },
                                             child: MudasirButton(
@@ -199,36 +201,38 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
               ),
               GestureDetector(
                 onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final user = FirebaseAuth.instance.currentUser!.email;
-                  print("iam tapped");
-                  CollectionReference users =
-                  FirebaseFirestore.instance.collection('FollowedUser');
-                  await users.doc(user).collection("FollowedUser").add({
-                    "email":user,
-                    "name": prefs.getString('name'),
-                    "image": prefs.getString('image'),
-                    "email1": prefs.getString('email'),
-                    "location":prefs.getString("location"),
-                    "userId": "",
-                    "postId": "",
-
-                  }).then((value)
-                  {
-                    var id = value.id;
-                    users.doc(user).set({
-                      "email":user,
-                    }).then((value)
-                    {
-                      users.doc(user).collection("FollowedUser").doc(id).update({
-                        "userId": user,
-                        "postId":id,
-                      });
-                    });
-                  });
+                  _followTopic.getdoucmentiduser();
+                  // final prefs = await SharedPreferences.getInstance();
+                  // final user = FirebaseAuth.instance.currentUser!.email;
+                  // print("iam tapped");
+                  // CollectionReference users =
+                  // FirebaseFirestore.instance.collection('FollowedUser');
+                  // await users.doc(user).collection("FollowedUser").add({
+                  //   "email":user,
+                  //   "name": prefs.getString('name'),
+                  //   "image": prefs.getString('image'),
+                  //   "email1": "user",
+                  //   "location":prefs.getString("location"),
+                  //   "userId": "",
+                  //   "postId": "",
+                  //
+                  // }).then((value)
+                  // {
+                  //   var id = value.id;
+                  //   users.doc(user).set({
+                  //     "email":user,
+                  //   }).then((value)
+                  //   {
+                  //     users.doc(user).collection("FollowedUser").doc(id).update({
+                  //       "userId": user,
+                  //       "postId":id,
+                  //     });
+                  //   });
+                  // });
                   Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => BottomNavBar()));
                   print("rrrrrrrrrrrrrrrrrrrrr");
+
                 },
                 child: Container(
                   width: 378.w,
