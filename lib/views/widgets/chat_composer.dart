@@ -24,7 +24,7 @@ Container buildChatComposer(
               child: Row(
                 children: [
                   circleAvatar!,
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(

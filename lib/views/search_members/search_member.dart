@@ -15,6 +15,7 @@ import '../../widgets/appbar_back_btn.dart';
 import '../../widgets/my_button.dart';
 import '../../widgets/my_custom_textfield.dart';
 import '../bottom_nav_bar.dart';
+import '../chat_screen/view/chat_screen.dart';
 import '../my_account/my_account.dart';
 
 class SearchMembersScreen extends StatefulWidget {
@@ -48,6 +49,7 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
   @override
   Widget build(BuildContext context) {
     List list  = [];
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -237,6 +239,7 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
 
 void _showBottomSheet(BuildContext context, data) {
   FollowController _followcontroller = Get.put(FollowController());
+  final currentuser = FirebaseAuth.instance.currentUser!.email;
   List list = [];
   var followedList = data["FollowedUser"];
   print("Followed List");
@@ -333,7 +336,7 @@ void _showBottomSheet(BuildContext context, data) {
                             print("iam tapped");
                             CollectionReference users = FirebaseFirestore.instance.collection("users");
                             users.doc(currentUser).collection("users").doc(controller.id).update({
-                              "FollowedUser":list
+                              "FollowedUser":FieldValue.arrayUnion(list),
                             });
                           },
                           child: MudasirButton(
@@ -354,10 +357,7 @@ void _showBottomSheet(BuildContext context, data) {
                         )
                       : InkWell(
                           onTap: () {
-
-
                              list = [data["email"]];
-
                             followedList.add(list);
                             //controller.toogle();
                             final currentUser =
@@ -407,7 +407,16 @@ void _showBottomSheet(BuildContext context, data) {
                         ),
                   SizedBox(height: 10.h),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Get.to(()=> ChatView(
+                        currentId: currentuser,
+                        friendId: data["email"],
+                        name: data["name"],
+                        image: data["image"],
+
+                      ),
+                      );
+                    },
                     child: MudasirButton(
                       width: 258.w,
                       height: 52.h,

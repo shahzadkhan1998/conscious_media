@@ -249,5 +249,7 @@ class SignUpController extends GetxController
     });
      
   }
+
+
 }
 

@@ -100,4 +100,8 @@ class SignInController extends GetxController {
       Get.snackbar("Login", "Welcome to Our App");
     }
   }
+  Future<void> resetPassword(String email) async {
+    final  _firebaseAuth = FirebaseAuth.instance;
+    await _firebaseAuth.sendPasswordResetEmail(email: email);
+  }
 }

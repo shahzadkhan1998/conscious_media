@@ -113,11 +113,17 @@ class _SignInScreenState extends State<SignInScreen> {
                         prefixIcon: Icon(Icons.lock_rounded, color: appMainColor),
                       ),
                       SizedBox(height: 8.h),
-                      Container(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          "Forgot Password?",
-                          style: TextStyle(color: colorWhite, fontSize: 15.sp),
+                      InkWell(
+                        onTap: ()
+                        {
+                          _signInController.resetPassword(_signInController.email.text);
+                        },
+                        child: Container(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "Forgot Password?",
+                            style: TextStyle(color: colorWhite, fontSize: 15.sp),
+                          ),
                         ),
                       ),
                       SizedBox(height: 20.h),
