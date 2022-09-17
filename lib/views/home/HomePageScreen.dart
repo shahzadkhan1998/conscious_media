@@ -185,6 +185,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                        print(likes);
 
 
+
+
                                        if(topicsList.contains(topics) || followedList.contains(userid))
                                          {
                                            return Container(

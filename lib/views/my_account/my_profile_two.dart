@@ -50,7 +50,7 @@ class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
                       children: [
                         InkWell(
                           onTap: () {
-                            Get.to(EditProfileTwoScreen());
+                            Get.to(const EditProfileTwoScreen());
                           },
                           child: CircleAvatar(
                             radius: 70.r,
@@ -75,7 +75,7 @@ class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
                 SizedBox(height: 10.h),
                 Text("Kathrin Ava", style: TextStyle(fontSize: 18.sp)),
                 SizedBox(height: 5.h),
-                Text("kathrin22@email.com"),
+                const Text("kathrin22@email.com"),
               ],
             ),
             SizedBox(
@@ -130,30 +130,30 @@ class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
                   Container(
                     width: double.infinity.w,
                     alignment: Alignment.centerLeft,
-                    child: Text("Edit Profile"),
+                    child: const Text("Edit Profile"),
                   ),
                   MyCustomTextField(
                       maxLines: 1,
                       hint: "My Following Topics (04)",
                       suffixIcon:
-                          Icon(Icons.arrow_forward_ios, color: colorBlack)),
+                          const Icon(Icons.arrow_forward_ios, color: colorBlack)),
                   SizedBox(height: 20.h),
                   Container(
                     width: double.infinity.w,
                     alignment: Alignment.centerLeft,
-                    child: Text("My Location"),
+                    child: const Text("My Location"),
                   ),
                   MyCustomTextField(
                     maxLines: 1,
                     hint: "12 ST Down Town- New York, USA",
-                    prefixIcon: Icon(Icons.location_on, color: appMainColor),
-                    suffixIcon: Icon(Icons.edit, color: colorBlack),
+                    prefixIcon: const Icon(Icons.location_on, color: appMainColor),
+                    suffixIcon: const Icon(Icons.edit, color: colorBlack),
                   ),
                   SizedBox(height: 20.h),
                   Container(
                     width: double.infinity.w,
                     alignment: Alignment.centerLeft,
-                    child: Text("About Me"),
+                    child: const Text("About Me"),
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -168,10 +168,10 @@ class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
                         Expanded(
                           flex: 2,
                           child: Container(
-                              child: Text(
+                              child: const Text(
                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.")),
                         ),
-                        Icon(Icons.edit),
+                        const Icon(Icons.edit),
                       ],
                     ),
                   )

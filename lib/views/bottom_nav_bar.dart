@@ -1,4 +1,5 @@
 
+import 'package:conscious_media/views/recent_chat/recent_chat.dart';
 import 'package:conscious_media/views/screens/create_post/create_new_post.dart';
 import 'package:conscious_media/views/widgets/recent_chats.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   final HomePageScreen cm_one = HomePageScreen();
-  final RecentChats message_two = RecentChats();
+  final RecentChat message_two = RecentChat();
   // final EditProfileScreen add_three = EditProfileScreen();
   final CreateNewPostScreen add_three = CreateNewPostScreen();
   final NotificationScreen notification_four = NotificationScreen();

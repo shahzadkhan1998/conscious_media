@@ -113,7 +113,7 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                               borderRadius: BorderRadius.circular(30),
                               child: Image.file(_createPostController.image!,
                                 height: 40,
-                                width: 60,
+                                width: Get.width,
                                 fit: BoxFit.cover,
 
                               ),

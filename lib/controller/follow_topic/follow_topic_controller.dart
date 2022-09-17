@@ -54,4 +54,6 @@ class FollowTopic extends GetxController {
 
     });
   }
+
+
 }

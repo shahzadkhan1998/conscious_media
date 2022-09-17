@@ -14,7 +14,8 @@ import '../../../controller/showPost_controller/show_post_controller.dart';
 import '../../../utils/colors_resources.dart';
 import '../../../utils/images.dart';
 import '../HomePageScreen.dart';
-
+var commentlist = [];
+var length = [];
 class ReadPost extends StatefulWidget {
   ReadPost({
     Key? key,
@@ -58,6 +59,44 @@ class ReadPost extends StatefulWidget {
 }
 
 class _ReadPostState extends State<ReadPost> {
+  var name;
+  var image;
+  /// userinfo
+  getuserinfo()
+  {
+    final currentUser = FirebaseAuth.instance.currentUser!.email;
+
+    FirebaseFirestore.instance.collection("users").doc(currentUser).collection("users").get().then((QuerySnapshot querySnapshot) {
+      for(var doc in querySnapshot.docs)
+        {
+          name = doc["name"];
+          image = doc["image"];
+
+        }
+    });
+  }
+
+/// feed activity
+  String like  = "like";
+  feedActivity(postid,postuserid) async
+  {
+    final currentUser = FirebaseAuth.instance.currentUser!.email;
+    CollectionReference feed = FirebaseFirestore.instance.collection("feed");
+    feed.doc(postuserid).collection("feeditem").doc(postid).set({
+      "email": currentUser,
+      "name":name,
+      "image":image,
+      "type":like
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getuserinfo();
+  }
+
   // final Function()? click_open_video;
   @override
   Widget build(BuildContext context) {
@@ -224,7 +263,11 @@ class _ReadPostState extends State<ReadPost> {
                                   .update({
                                 "like": widget.list!,
                               });
+
+                              feedActivity(currentpostid,currentUserid);
+
                               setState(() {});
+
                             },
                             child: const Icon(Icons.favorite_border),
                           ),
@@ -235,7 +278,7 @@ class _ReadPostState extends State<ReadPost> {
                     SizedBox(
                       width: 4.w,
                     ),
-                    Text(widget.length.toString(),
+                    Text(widget.list!.length.toString(),
                         style: const TextStyle(color: colorTextGray)),
                     SizedBox(
                       width: 40.w,
@@ -269,8 +312,8 @@ class _ReadPostState extends State<ReadPost> {
                     SizedBox(
                       width: 4.w,
                     ),
-                    Text(
-                      value.comment_count.toString()== null ? "0":value.comment_count.toString(),
+                    const Text(
+                      "0",
                       style: TextStyle(color: colorTextGray),
                     ),
                   ],
@@ -419,14 +462,16 @@ void CommentsTextFieldBottomSheet(
                             shrinkWrap: true,
                             itemCount: snapshot.data!.docs.length,
                             itemBuilder: (BuildContext context, index1) {
+
                               if (snapshot.data!.docs.length < 1) {
                                 return const Center(
                                   child: Text(" No Yet Comments"),
                                 );
                               }
+
+
                               var allcooment =
                               snapshot.data!.docs[index1].data();
-                              var commentlist = [];
                               commentlist.add(allcooment);
 
                               return ListTile(

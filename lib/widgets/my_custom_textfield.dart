@@ -8,6 +8,7 @@ class MyCustomTextField extends StatelessWidget {
   final double? width;
   final double? hight;
   final int? maxLines;
+
   // final Function? onChange;
   // final Function validator;
   final Widget? suffixIcon;
@@ -26,6 +27,7 @@ class MyCustomTextField extends StatelessWidget {
     @override required this.hint,
     this.width,
     // this.onChange,
+
     this.kry,
     // required this.validator,
     this.suffixIcon,
@@ -36,6 +38,7 @@ class MyCustomTextField extends StatelessWidget {
     this.maxLines,
     this.color,
     this.border_color,
+
     // required this.borderColor,
     // required this.obscureText,
     /*required this.decoration*/

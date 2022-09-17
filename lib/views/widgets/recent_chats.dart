@@ -29,7 +29,7 @@ class _RecentChatsState extends State<RecentChats> {
           backwardsCompatibility: false,
           backgroundColor: colorWhite,
           foregroundColor: colorBlack,
-          title: Text('Chat'),
+          title: const Text('Chat'),
         ),
         body: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),

@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conscious_media/views/search_members/widgets/search_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -80,12 +81,39 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
         child: Column(
           children: [
             SizedBox(height: 12.h),
-            MyCustomTextField(
-              color: colorWhite,
-              border_color: colorWhite,
-              prefixIcon: Icon(Icons.search),
-              hint: "Search...",
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0,right: 8.0),
+              child: TextField(
+                readOnly: true,
+                decoration: InputDecoration(
+                  suffixIcon:InkWell(
+                    onTap: ()
+                      {
+                        print("Clicked");
+                        Get.to(()=>SearchScreen());
+                      },
+                      child: const Icon(Icons.search)),
+                    border:OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        width: 0,
+                        style: BorderStyle.none,
+                      ),
+                    ),
+                    filled: true,
+                    hintStyle: TextStyle(color: Colors.grey[800]),
+                    hintText: "search",
+                    fillColor: Colors.white70),
+                ),
             ),
+
+            // MyCustomTextField(
+            //   color: colorWhite,
+            //   border_color: colorWhite,
+            //   suffixIcon: const Icon(Icons.search),
+            //
+            //   hint: "Search...",
+            // ),
             SizedBox(height: 10.h),
             Container(
               height: MediaQuery.of(context).size.height,

@@ -55,6 +55,13 @@ class _MessageTextFieldState extends State<MessageTextField> {
                   'name': widget.friendName,
                   'date': DateTime.now(),
                   'image':widget.image,
+                }).then((value)
+                {
+                  FirebaseFirestore.instance
+                      .collection('chats')
+                      .doc(widget.currentId).set({
+                        "message":messages,
+                  });
                 });
 
 
@@ -74,7 +81,13 @@ class _MessageTextFieldState extends State<MessageTextField> {
                   'date': DateTime.now(),
                   "image":widget.image,
                 },
-                );
+                ).then((value) {
+                  FirebaseFirestore.instance
+                      .collection("user")
+                      .doc(widget.friendId).set({
+                      "message":messages
+                  });
+                });
 
               },
           ),

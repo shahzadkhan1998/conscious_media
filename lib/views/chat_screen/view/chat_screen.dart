@@ -39,11 +39,9 @@ class _ChatViewState extends State<ChatView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colorPurple,
-        leading: BlendMa(
-          child: IconButton(icon:Icon(Icons.arrow_back_ios_new_outlined), onPressed: () {
-            Get.back();
-          }, ),
-        ),
+        leading: IconButton(icon:Icon(Icons.arrow_back_ios_new_outlined), onPressed: () {
+          Get.back();
+        }, ),
         title: Row(
           children: [
             ClipRRect(

@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conscious_media/utils/global_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,33 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
     "Happy news",
 
   ];
+  var topicsList;
+  List topiclistconvert = [];
+  /// get Topics
+  getFollowTopics() async
+  {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    await FirebaseFirestore.instance.collection("users").
+    doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot)
+    {
+      for(var doc in querySnapshot.docs)
+      {
+        topicsList = doc["selectedTopics"].toString();
+        print("Followed Topics is");
+        print(topicsList);
+        setState(() {
+
+        });
+
+
+      }
+    });
+  }
    @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getFollowTopics();
 
   }
   @override
@@ -172,6 +196,7 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
                                               // _followTopic.getdoucmentiduser();
                                                _followTopic.StoreTopicFollow(list);
 
+
                                             },
                                             child: MudasirButton(
                                               onPressedbtn: ()
@@ -183,7 +208,7 @@ class _FollowTopicScreenState extends State<FollowTopicScreen> {
                                               height: 25.h,
                                               text_color: colorBlack,
                                               colorss: tapindex == index ? Colors.green : Colors.white,
-                                              text: tapindex == index ? "Followed":"Follow",
+                                              text: topicsList.contains(list[index]) ? "Followed":"Follow",
                                             ),
                                           ),
                                         ),
