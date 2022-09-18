@@ -53,7 +53,12 @@ class FollowController extends GetxController
         id = doc["id"];
         followedList = doc["FollowedUser"];
         print("iD is ...... $id");
+        print("Followed List is ...");
+        print(followedList);
+        update();
+
       }
+      update();
     });
   }
   ///// follow Topic ////////

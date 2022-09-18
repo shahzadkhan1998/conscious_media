@@ -104,7 +104,8 @@ class SignUpController extends GetxController
      "image":url,
      "selectedTopics":"",
       "id":"",
-      "FollowedUser":[]
+      "FollowedUser":[],
+     "playerid":prefs.getString("oneSignalId"),
    }).then((value) async
    {
      id = value.id;

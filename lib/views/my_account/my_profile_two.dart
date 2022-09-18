@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../controller/profile_controller/profile_controller.dart';
 import '../../utils/colors_resources.dart';
 import '../../utils/images.dart';
 import '../../widgets/my_custom_textfield.dart';
@@ -17,6 +18,7 @@ class EditProfileTwoScreen extends StatefulWidget {
 class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
   @override
   Widget build(BuildContext context) {
+    final controller  = Get.put(ProfileController());
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(

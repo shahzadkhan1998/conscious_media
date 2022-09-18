@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conscious_media/utils/global_list.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../controller/profile_controller/profile_controller.dart';
 import '../../utils/colors_resources.dart';
 import '../../utils/images.dart';
 import '../../widgets/my_button.dart';
@@ -18,8 +22,40 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final controller  = Get.put(ProfileController());
+
+  getUserinfo()
+  {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance.collection("users").doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot) {
+      for(var doc in querySnapshot.docs)
+      {
+        controller.name = doc["name"];
+        controller.image = doc["image"];
+        controller.following = doc["FollowedUser"] as List;
+        controller.topicfollowed = doc["selectedTopics"] as List;
+        controller.location = doc["location"];
+        print(doc["name"]);
+
+
+
+
+      }
+
+    });
+
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserinfo();
+
+  }
   @override
   Widget build(BuildContext context) {
+    final controller  = Get.put(ProfileController());
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -55,14 +91,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         onTap: () {},
                         child: CircleAvatar(
                           radius: 70.r,
-                          backgroundColor: colorWhite,
-                          child: Padding(
-                            padding: EdgeInsets.all(4.0.h),
-                            child: Image.asset(
-                              Images.person_two,
-                              // fit: BoxFit.cover,
-                            ),
-                          ),
+                          backgroundImage: NetworkImage(controller.image),
                         ),
                       ),
                     ),
@@ -73,9 +102,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Column(
               children: [
                 SizedBox(height: 10.h),
-                Text("Kathrin Ava", style: TextStyle(fontSize: 22.sp)),
+                Text(controller.name, style: TextStyle(fontSize: 22.sp)),
                 SizedBox(height: 5.h),
-                Text("Kathrin Ava",
+                Text(controller.name,
                     style: TextStyle(fontSize: 18.sp, letterSpacing: 1)),
               ],
             ),
@@ -99,7 +128,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(30.0.r),
                             color: colorGray,
                           ),
-                          child: Text("283 Followers",
+                          child: Text("0 Followers",
                               style: TextStyle(
                                   color: colorGrean,
                                   fontSize: 18.sp,
@@ -117,7 +146,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(30.0.r),
                             color: colorGray,
                           ),
-                          child: Text("54 Following",
+                          child: Text("${controller.following.length}  Following",
                               style: TextStyle(
                                   fontSize: 18.sp,
                                   color: colorPurple,
@@ -136,7 +165,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   SizedBox(height: 10.h),
                   MyCustomTextField(
                       maxLines: 1,
-                      hint: "My Following Topics (04)",
+                      hint: "${controller.topicfollowed}",
                       suffixIcon:
                           Icon(Icons.arrow_forward_ios, color: colorBlack)),
                   SizedBox(height: 20.h),
@@ -148,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   SizedBox(height: 20.h),
                   MyCustomTextField(
                     maxLines: 1,
-                    hint: "12 ST Down Town- New York, USA",
+                    hint: "${controller.location}",
                     prefixIcon: Icon(Icons.location_on, color: appMainColor),
                     suffixIcon: Icon(Icons.edit, color: colorBlack),
                   ),
@@ -172,7 +201,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Expanded(
                           flex: 2,
                           child: Container(
-                              child: Text(
+                              child: const Text(
                                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.")),
                         ),
                         Icon(Icons.edit),

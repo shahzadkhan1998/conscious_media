@@ -92,13 +92,21 @@ var feedList = [];
             shrinkWrap: true,
             itemCount: feedList.length ,
            itemBuilder: (BuildContext context, int index)
+
            {
+             if(feedList.length <1)
+               {
+                 return const Center(
+                   child: Text("No Feed found"),
+                 );
+               }
              return ListTile(
                leading: ClipRRect(
                  borderRadius: BorderRadius.circular(15),
                  child: Image.network(feedList[index]["image"]),
                ),
-               title: Text("${feedList[index]["name"]} is Like your Post"),
+               title: feedList[index]["type"] == "like"?Text("${feedList[index]["name"]} is ${feedList[index]["type"]} your Post"):
+               Text("${feedList[index]["name"]} is ${feedList[index]["type"]} you"),
                subtitle:Text(feedList[index]["email"]),
                trailing: const Icon((Icons.notifications_active)),
              );

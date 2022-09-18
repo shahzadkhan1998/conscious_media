@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conscious_media/views/search_members/widgets/search_screen.dart';
@@ -18,6 +20,29 @@ import '../../widgets/my_custom_textfield.dart';
 import '../bottom_nav_bar.dart';
 import '../chat_screen/view/chat_screen.dart';
 import '../my_account/my_account.dart';
+import 'package:http/http.dart' as http;
+
+//var token = "N2EzYWJjMWUtMGY4ZC00NDcyLWIwMzQtZmM3ZGYyMTBjOTJj";
+sentNotification(playerId,heading , content)
+{
+  Map  body = {
+    "app_id":"f07e9a40-4f23-4ee8-9006-d1a1c99c726b",
+    "include_player_ids":["$playerId"],
+    "contents":{"en":"$content is Followed You"},
+    "headings":{"en":"$heading"},
+    "data":{"custom_data":"This is Custom Value"}
+  };
+  Map<String,String> header = {'Content-Type':'application/json','authorization':'Basic N2EzYWJjMWUtMGY4ZC00NDcyLWIwMzQtZmM3ZGYyMTBjOTJj'};
+  final response = http.post(Uri.parse("https://onesignal.com/api/v1/notifications?="),headers: header,body:jsonEncode(body)).then((value) {
+   print("http response");
+    print(value.body);
+    print(value.statusCode);
+
+  });
+
+
+
+}
 
 class SearchMembersScreen extends StatefulWidget {
   const SearchMembersScreen({Key? key}) : super(key: key);
@@ -50,6 +75,8 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
   @override
   Widget build(BuildContext context) {
     List list  = [];
+    final followcontroller = Get.put(FollowController());
+
 
     return Scaffold(
       appBar: AppBar(
@@ -174,6 +201,7 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
                               var data = snapshot1.data!.docs[index1].data();
                               print("Follow page Data");
                               print(data);
+
                               return ListTile(
                                 leading: CircleAvatar(
                                   backgroundImage: NetworkImage(data["image"]),
@@ -267,11 +295,50 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
 
 void _showBottomSheet(BuildContext context, data) {
   FollowController _followcontroller = Get.put(FollowController());
+  print("status is ..");
+  print(_followcontroller.followedList.contains(data["email"]));
+
   final currentuser = FirebaseAuth.instance.currentUser!.email;
   List list = [];
   var followedList = data["FollowedUser"];
   print("Followed List");
   print(followedList);
+  // userinfo
+  var name;
+  var email;
+  var image;
+  getCurrentUserInfo()
+  {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance.collection("users").doc(currentuser)
+        .collection("users").get().then((QuerySnapshot querySnapshot) {
+      for(var doc in querySnapshot.docs)
+      {
+        name = doc["name"];
+        email = doc["email"];
+        image = doc["image"];
+      }
+    }).then((value) => print("userInfo retrieved"));
+  }
+  getCurrentUserInfo();
+
+  print("player id is ......");
+  print(data["playerid"]);
+
+  // ad to feed
+  feedactivityfollow(ids) async
+  {
+    CollectionReference feed = FirebaseFirestore.instance.collection("feed");
+    feed.doc(ids).collection("feeditem").add({
+       "type":"follow",
+        "name":name,
+        "email":email,
+        "image":image,
+
+    });
+
+
+  }
   showModalBottomSheet(
     isScrollControlled: true,
     context: context,
@@ -355,16 +422,18 @@ void _showBottomSheet(BuildContext context, data) {
                   controller.followedList.contains(data["email"])
                       ? InkWell(
                           onTap: () {
+                            print("status 2");
+                            print(_followcontroller.followedList.contains(data["email"]));
                             list = [data["email"]];
                             followedList.add(list);
-
-                            controller.toogle();
                             final currentUser =
                                 FirebaseAuth.instance.currentUser!.email;
                             print("iam tapped");
                             CollectionReference users = FirebaseFirestore.instance.collection("users");
                             users.doc(currentUser).collection("users").doc(controller.id).update({
-                              "FollowedUser":FieldValue.arrayUnion(list),
+                              "FollowedUser":FieldValue.arrayRemove(list),
+                            }).then((value) {
+
                             });
                           },
                           child: MudasirButton(
@@ -384,38 +453,30 @@ void _showBottomSheet(BuildContext context, data) {
                           ),
                         )
                       : InkWell(
-                          onTap: () {
+                          onTap: () async {
+                            print("status 2");
+                            print(_followcontroller.followedList.contains(data["email"]));
+                             list.clear();
+                            ////
                              list = [data["email"]];
-                            followedList.add(list);
-                            //controller.toogle();
-                            final currentUser =
-                                FirebaseAuth.instance.currentUser!.email;
-                            print("iam tapped");
-                            CollectionReference users = FirebaseFirestore.instance.collection("users");
-                            users.doc(currentUser).collection("users").doc(controller.id).update({
-                              "FollowedUser":FieldValue.arrayUnion(list),
-                            });
+                             print("followed List is...2");
+                             print(list);
 
-                            // final currentUser =
-                            //     FirebaseAuth.instance.currentUser!.email;
-                            // var list = [currentUser];
-                            // FirebaseFirestore.instance.collection("users").doc(currentUser).collection("users").doc(controller.id).update(
-                            //   {
-                            //     "FollowedUser":FieldValue.arrayRemove(list),
-                            //   }
-                            // );
-                            // FirebaseFirestore.instance
-                                // .collection("FollowedUser")
-                                // .doc(currentUser)
-                                // .collection("FollowedUser")
-                                // .doc(controller.id)
-                                // .delete()
-                                // .then((doc)  {
-                                //
-                                //       print("Document deleted");
-                                //     },
-                                //      onError: (e) => print("Error updating document $e"),
-                                //     );
+
+                             // controller.toogle();
+                             final currentUser =
+                                 FirebaseAuth.instance.currentUser!.email;
+                             print("iam tapped");
+                             CollectionReference users = FirebaseFirestore.instance.collection("users");
+                             users.doc(currentUser).collection("users").doc(controller.id).update({
+                               "FollowedUser":FieldValue.arrayUnion(list),
+                             });
+                             // add to feed
+                             await feedactivityfollow(data["email"]);
+                             await sentNotification(data["playerid"],"conscious_media",name);
+
+
+
                           },
                           child: MudasirButton(
                             onPressedbtn: () {},

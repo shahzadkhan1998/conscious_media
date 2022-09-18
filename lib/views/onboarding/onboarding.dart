@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/colors_resources.dart';
 import '../../utils/font_sizes.dart';
@@ -19,13 +21,41 @@ class OnbordingScreen extends StatefulWidget {
 }
 
 class _OnbordingScreenState extends State<OnbordingScreen> {
+  SharedPreferences? preferences;
   int currentIndex = 0;
   PageController? _controller;
+  // initailize the sharedprefrence
+  initPref() async
+  {
+    preferences = await SharedPreferences.getInstance();
+  }
+
+  /// initailize OneSignal
+  void configOneSignal() async
+  {
+    OneSignal.shared.setLogLevel(OSLogLevel.debug, OSLogLevel.none);
+    OneSignal.shared.setAppId("f07e9a40-4f23-4ee8-9006-d1a1c99c726b");
+    await OneSignal.shared.promptUserForPushNotificationPermission(
+      fallbackToSettings: true,
+    );
+
+    final status = await OneSignal.shared.getDeviceState();
+    final String? playerid = status?.userId;
+    print("Player id is ************");
+    print(playerid);
+    preferences!.setString("oneSignalId", playerid!);
+    print("Shred pref data saved .....");
+    print(preferences!.getString("oneSignalId"));
+  }
+
 
   @override
   void initState() {
     _controller = PageController(initialPage: 0);
     super.initState();
+    initPref();
+    configOneSignal();
+
   }
 
   @override

@@ -33,8 +33,8 @@ class AppbarHome extends StatelessWidget {
           onTap: () {
             Get.to(SearchMembersScreen());
           },
-          child: Padding(
-            padding: const EdgeInsets.only(right: 10),
+          child: const Padding(
+            padding: EdgeInsets.only(right: 10),
             child: Icon(Icons.search, color: colorGrean),
           ),
         ),
