@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../controller/signup_controller/signup_controller.dart';
 import '../../utils/colors_resources.dart';
 import '../../utils/font_sizes.dart';
 import '../../utils/images.dart';
@@ -21,6 +22,7 @@ class OnbordingScreen extends StatefulWidget {
 }
 
 class _OnbordingScreenState extends State<OnbordingScreen> {
+  final signupcontroller  = Get.put(SignUpController());
   SharedPreferences? preferences;
   int currentIndex = 0;
   PageController? _controller;
@@ -31,7 +33,7 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
   }
 
   /// initailize OneSignal
-  void configOneSignal() async
+   configOneSignal() async
   {
     OneSignal.shared.setLogLevel(OSLogLevel.debug, OSLogLevel.none);
     OneSignal.shared.setAppId("f07e9a40-4f23-4ee8-9006-d1a1c99c726b");
@@ -39,13 +41,26 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
       fallbackToSettings: true,
     );
 
-    final status = await OneSignal.shared.getDeviceState();
-    final String? playerid = status?.userId;
-    print("Player id is ************");
-    print(playerid);
-    preferences!.setString("oneSignalId", playerid!);
-    print("Shred pref data saved .....");
-    print(preferences!.getString("oneSignalId"));
+    OneSignal.shared.setSubscriptionObserver((OSSubscriptionStateChanges changes)
+    async{
+
+      final status = await OneSignal.shared.getDeviceState();
+      final String? playerid = await status?.userId;
+      print("Player id is ************");
+      print(playerid);
+      preferences!.setString("oneSignalId", playerid!);
+      print("Shred pref data saved .....");
+      print(preferences!.getString("oneSignalId"));
+    });
+
+        }
+
+  _storeOnboardInfo() async {
+    print("Shared pref called");
+    int isViewed = 0;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('onBoard', isViewed);
+    print(prefs.getInt('onBoard'));
   }
 
 
@@ -53,9 +68,27 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
   void initState() {
     _controller = PageController(initialPage: 0);
     super.initState();
-    initPref();
-    configOneSignal();
+    //initPref();
+   // configOneSignal();
 
+  }
+
+
+  @override
+  void didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    await initPref();
+    await configOneSignal();
+    await checkLocation();
+
+
+  }
+
+  checkLocation() async
+  {
+    await signupcontroller.getUserLocation();
+   await  signupcontroller.convertToAdress();
   }
 
   @override
@@ -189,7 +222,10 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
-                        onTap: () {
+                        onTap: () async {
+                      if (currentIndex == contents.length - 1) {
+                        await _storeOnboardInfo();
+                      }
                           if (currentIndex == contents.length - 1) {
                             Get.to(MemberShipScreen());
                           } else {
@@ -224,10 +260,7 @@ class _OnbordingScreenState extends State<OnbordingScreen> {
                           if (currentIndex == 0) {
                             Get.offAll(SignInScreen());
                           } else {
-                            _controller!.previousPage(
-                              duration: Duration(milliseconds: 100),
-                              curve: Curves.bounceIn,
-                            );
+                            Get.offAll(const SignInScreen());
                           }
                         },
                         child: Container(

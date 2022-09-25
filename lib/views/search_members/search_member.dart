@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:conscious_media/views/search_members/widgets/search_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -16,10 +13,7 @@ import '../../utils/colors_resources.dart';
 import '../../utils/images.dart';
 import '../../widgets/appbar_back_btn.dart';
 import '../../widgets/my_button.dart';
-import '../../widgets/my_custom_textfield.dart';
-import '../bottom_nav_bar.dart';
 import '../chat_screen/view/chat_screen.dart';
-import '../my_account/my_account.dart';
 import 'package:http/http.dart' as http;
 
 //var token = "N2EzYWJjMWUtMGY4ZC00NDcyLWIwMzQtZmM3ZGYyMTBjOTJj";
@@ -45,6 +39,7 @@ sentNotification(playerId,heading , content)
 }
 
 class SearchMembersScreen extends StatefulWidget {
+
   const SearchMembersScreen({Key? key}) : super(key: key);
 
   @override
@@ -53,7 +48,11 @@ class SearchMembersScreen extends StatefulWidget {
 
 class _SearchMembersScreenState extends State<SearchMembersScreen> {
   final followcontroller = Get.put(FollowController());
+  final List<bool> selected = List.generate(20, (i) => false);
 
+  var currentUser;
+
+  String name = "";
   final imageList = [
     Images.person_one,
     Images.person_two,
@@ -72,9 +71,37 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
     "Healthy living",
     "Eco Homes",
   ];
+  List FollowTopic = [];
+  List FollowUser = [];
+  getCurrentUserInfo()
+  {
+    final currentuser  = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance.collection("users").doc(currentuser)
+        .collection("users").get().then((QuerySnapshot querySnapshot) {
+      for(var doc in querySnapshot.docs)
+      {
+        FollowTopic = doc["selectedTopics"];
+        FollowUser = doc["FollowedUser"];
+        setState(() {
+
+        });
+
+
+      }
+    }).then((value) => print("userInfo retrieved"));
+  }
+
+  @override
+  void didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    await getCurrentUserInfo();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    List list  = [];
+    currentUser = FirebaseAuth.instance.currentUser!.email;
     final followcontroller = Get.put(FollowController());
 
 
@@ -105,176 +132,256 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 12.h),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0,right: 8.0),
-              child: TextField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  suffixIcon:InkWell(
-                    onTap: ()
-                      {
-                        print("Clicked");
-                        Get.to(()=>SearchScreen());
-                      },
-                      child: const Icon(Icons.search)),
-                    border:OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        width: 0,
-                        style: BorderStyle.none,
-                      ),
-                    ),
-                    filled: true,
-                    hintStyle: TextStyle(color: Colors.grey[800]),
-                    hintText: "search",
-                    fillColor: Colors.white70),
-                ),
-            ),
+        child: GetBuilder<FollowController>(
+          init: FollowController(),
+          builder: (controller) {
+            return Column(
+              children: [
+                SizedBox(height: 12.h),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0,right: 8.0),
+                  child: TextField(
+                    onChanged: (val)
+                    {
+                      setState(() {
+                        name = val;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon:InkWell(
+                        onTap: ()
+                          {
+                            // print("Clicked");
+                            // Get.to(()=>const SearchScreen());
+                          },
+                          child: const Icon(Icons.search)),
+                        border:OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            width: 0,
+                            style: BorderStyle.none,
+                          ),
+                        ),
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.grey[800]),
+                        hintText: "search",
+                        fillColor: Colors.white70),
 
-            // MyCustomTextField(
-            //   color: colorWhite,
-            //   border_color: colorWhite,
-            //   suffixIcon: const Icon(Icons.search),
-            //
-            //   hint: "Search...",
-            // ),
-            SizedBox(height: 10.h),
-            Container(
-              height: MediaQuery.of(context).size.height,
-              child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance.collection("users").snapshots(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot<dynamic>> snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(
-                      child: Text("No Data"),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator.adaptive(),
-                    );
-                  }
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      if (snapshot.data!.docs.length < 1) {
+                    ),
+                ),
+
+                // MyCustomTextField(
+                //   color: colorWhite,
+                //   border_color: colorWhite,
+                //   suffixIcon: const Icon(Icons.search),
+                //
+                //   hint: "Search...",
+                // ),
+                SizedBox(height: 10.h),
+                Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream:
+                        FirebaseFirestore.instance.collection("users").snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot<dynamic>> snapshot) {
+                      if (!snapshot.hasData) {
                         return const Center(
-                          child: Text("No user Available"),
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator.adaptive(),
                         );
                       }
-                      var ids = snapshot.data!.docs[index].id;
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const ScrollPhysics(),
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (snapshot.data!.docs.length < 1) {
+                            return const Center(
+                              child: Text("No user Available"),
+                            );
+                          }
+                          var ids = snapshot.data!.docs[index].id;
 
-                      return StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(ids)
-                            .collection("users")
-                            .snapshots(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<QuerySnapshot<dynamic>> snapshot1) {
-                          if (!snapshot1.hasData) {
-                            return const Center(
-                              child: Text("No data"),
-                            );
-                          }
-                          if (snapshot1.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator.adaptive(),
-                            );
-                          }
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: snapshot1.data!.docs.length,
-                            itemBuilder: (context, index1) {
-                              if (snapshot.data!.docs.length < 1) {
+                          return StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection("users")
+                                .doc(ids)
+                                .collection("users")
+                                .snapshots(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<QuerySnapshot<dynamic>> snapshot1) {
+                              if (!snapshot1.hasData) {
                                 return const Center(
-                                  child: Text("No user Available"),
+                                  child: CircularProgressIndicator(),
                                 );
                               }
-                              var data = snapshot1.data!.docs[index1].data();
-                              print("Follow page Data");
-                              print(data);
+                              if (snapshot1.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator.adaptive(),
+                                );
+                              }
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics: const ScrollPhysics(),
+                                itemCount: snapshot1.data!.docs.length,
+                                itemBuilder: (context, index1) {
+                                  if (snapshot.data!.docs.length < 1) {
+                                    return const Center(
+                                      child: Text("No user Available"),
+                                    );
+                                  }
+                                  var data = snapshot1.data!.docs[index1].data();
+                                  List dataList = [];
+                                  dataList.add(data);
+                                  List followUser   = data["FollowedUser"];
+                                  print("Followed user is ");
+                                  print(followUser);
 
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(data["image"]),
-                                ),
-                                title: Text(
-                                  data["name"],
-                                  style: TextStyle(fontSize: 20.sp),
-                                ),
-                                subtitle: Text(
-                                  data["location"],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 14.sp),
-                                ),
-                                trailing: followcontroller.followedList.contains(data["email"])?
-                                MaterialButton(
-                                  height: 35.h,
-                                  color: appMainColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(30.0)),
-                                  onPressed: () {
-                                    followcontroller.getTopics();
-                                    _showBottomSheet(context, data);
-                                  },
+                                  if(name.isEmpty)
+                                    {
+                                      return data["email"] == currentUser ?Container() :ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundImage: NetworkImage(data["image"]),
+                                        ),
 
-                                  child: const Text(
-                                    'Followed',
-                                    style: TextStyle(color: colorWhite),
-                                  ),
-                                ):
-                                MaterialButton(
-                                  height: 35.h,
-                                  color: appMainColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(30.0)),
-                                  onPressed: () {
-                                    followcontroller.getTopics();
-                                    _showBottomSheet(context, data);
-                                  },
+                                        title:Text(
+                                          data["name"],
+                                          style: TextStyle(fontSize: 20.sp),
+                                        ),
+                                        subtitle: Text(
+                                          data["location"]??"Not Get",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 14.sp),
+                                        ),
+                                        trailing:
+                                        MaterialButton(
+                                          height: 35.h,
+                                          color: appMainColor,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(30.0)),
+                                          onPressed: () {
+                                            setState(() => selected[index] = !selected[index]);
+                                            followcontroller.getTopics();
+                                            _showBottomSheet(context, data,index);
+                                          },
 
-                                  child: const Text(
-                                    'Follow',
-                                    style: TextStyle(color: colorWhite),
-                                  ),
-                                ),
+                                          child: FollowUser.contains(data["email"]) ? const Text(
+                                            'Followed',
+                                            style: TextStyle(color: colorWhite),
+                                          ) :const Text(
+                                            'Follow',
+                                            style: TextStyle(color: colorWhite),
+                                          ) ,
+                                        ),
 
 
-                                onTap: () {
-                                  print("object");
-                                  setState(
-                                    () {
-                                      DraggableScrollableSheet(
-                                        builder: (BuildContext context,
-                                            ScrollController scrollController) {
-                                          return Container(
-                                            color: Colors.blue[100],
-                                            child: ListView.builder(
-                                              controller: scrollController,
-                                              itemCount: 25,
-                                              itemBuilder:
-                                                  (BuildContext context,
-                                                      int index) {
-                                                return ListTile(
-                                                    title: Text('Item $index'));
-                                              },
-                                            ),
+
+                                        onTap: () {
+                                          print("object");
+                                          setState(
+                                                () {
+                                              DraggableScrollableSheet(
+                                                builder: (BuildContext context,
+                                                    ScrollController scrollController) {
+                                                  return Container(
+                                                    color: Colors.blue[100],
+                                                    child: ListView.builder(
+                                                      controller: scrollController,
+                                                      itemCount: 25,
+                                                      itemBuilder:
+                                                          (BuildContext context,
+                                                          int index) {
+                                                        return ListTile(
+                                                            title: Text('Item $index'));
+                                                      },
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
                                           );
                                         },
                                       );
-                                    },
-                                  );
+
+                                    }
+
+                                  if(data["name"].toString().toLowerCase().startsWith(name.toLowerCase()))
+                                    {
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundImage: NetworkImage(data["image"]),
+                                        ),
+                                        title:  Text(
+                                          data["name"],
+                                          style: TextStyle(fontSize: 20.sp),
+                                        ),
+                                        subtitle: Text(
+                                          data["location"]??"Not Get",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 14.sp),
+                                        ),
+                                        trailing:
+                                        MaterialButton(
+                                          height: 35.h,
+                                          color: appMainColor,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(30.0)),
+                                          onPressed: () {
+                                            setState(() => selected[index] = !selected[index]);
+                                            followcontroller.getTopics();
+                                            _showBottomSheet(context, data,index);
+                                          },
+
+                                          child: FollowUser.contains(data["email"]) ? const Text(
+                                            'Followed',
+                                            style: TextStyle(color: colorWhite),
+                                          ) :const Text(
+                                            'Follow',
+                                            style: TextStyle(color: colorWhite),
+                                          ) ,
+                                        ),
+
+
+
+                                        onTap: () {
+                                          print("object");
+                                          setState(
+                                                () {
+                                              DraggableScrollableSheet(
+                                                builder: (BuildContext context,
+                                                    ScrollController scrollController) {
+                                                  return Container(
+                                                    color: Colors.blue[100],
+                                                    child: ListView.builder(
+                                                      controller: scrollController,
+                                                      itemCount: 25,
+                                                      itemBuilder:
+                                                          (BuildContext context,
+                                                          int index) {
+                                                        return ListTile(
+                                                            title: Text('Item $index'));
+                                                      },
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          );
+                                        },
+                                      );
+                                    }
+
+                                  return Container();
                                 },
                               );
                             },
@@ -282,31 +389,39 @@ class _SearchMembersScreenState extends State<SearchMembersScreen> {
                         },
                       );
                     },
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ),
+              ],
+            );
+          }
         ),
       ),
     );
   }
 }
 
-void _showBottomSheet(BuildContext context, data) {
-  FollowController _followcontroller = Get.put(FollowController());
-  print("status is ..");
-  print(_followcontroller.followedList.contains(data["email"]));
+void _showBottomSheet(context, data,index) {
 
+  FollowController _followcontroller = Get.put(FollowController());
   final currentuser = FirebaseAuth.instance.currentUser!.email;
   List list = [];
   var followedList = data["FollowedUser"];
+
   print("Followed List");
   print(followedList);
+
+  /// data email
+  print(data["email"]);
+
+  // folow check
+  print("status 2");
+  print(followedList.contains(data["email"]));
   // userinfo
   var name;
   var email;
   var image;
+  List FollowTopic = [];
+  List FollowUser = [];
   getCurrentUserInfo()
   {
     final currentuser  = FirebaseAuth.instance.currentUser!.email;
@@ -317,6 +432,10 @@ void _showBottomSheet(BuildContext context, data) {
         name = doc["name"];
         email = doc["email"];
         image = doc["image"];
+        FollowTopic = doc["selectedTopics"];
+        FollowUser = doc["FollowedUser"];
+
+
       }
     }).then((value) => print("userInfo retrieved"));
   }
@@ -329,7 +448,7 @@ void _showBottomSheet(BuildContext context, data) {
   feedactivityfollow(ids) async
   {
     CollectionReference feed = FirebaseFirestore.instance.collection("feed");
-    feed.doc(ids).collection("feeditem").add({
+    await feed.doc(ids).collection("feeditem").add({
        "type":"follow",
         "name":name,
         "email":email,
@@ -339,6 +458,8 @@ void _showBottomSheet(BuildContext context, data) {
 
 
   }
+
+  final List<bool> selected = List.generate(20, (i) => false);
   showModalBottomSheet(
     isScrollControlled: true,
     context: context,
@@ -359,230 +480,261 @@ void _showBottomSheet(BuildContext context, data) {
       child: GetBuilder<FollowController>(
           init: FollowController(),
           builder: (controller) {
-            return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '     ',
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Image.asset(
-                        Images.bottom_top_panal,
-                        width: 40.w,
-                      ),
-                      Container(
-                          width: 30.w,
-                          height: 30.h,
-                          child: FloatingActionButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            backgroundColor: colorWhite,
-                            child: const Icon(Icons.close, color: colorBlack),
-                          )),
-                    ],
-                  ),
-                  SizedBox(height: 20.h),
-                  CircleAvatar(
-                    radius: 50.r,
-                    backgroundImage: NetworkImage(
-                      data["image"],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      data["name"],
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Row(
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.location_on,
-                          color: blackColor.withOpacity(0.5)),
-                      Text(
-                        data["location"],
-                        style: TextStyle(
-                            fontSize: 16.sp,
-                            color: blackColor.withOpacity(0.5)),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10.h),
-                  controller.followedList.contains(data["email"])
-                      ? InkWell(
-                          onTap: () {
-                            print("status 2");
-                            print(_followcontroller.followedList.contains(data["email"]));
-                            list = [data["email"]];
-                            followedList.add(list);
-                            final currentUser =
-                                FirebaseAuth.instance.currentUser!.email;
-                            print("iam tapped");
-                            CollectionReference users = FirebaseFirestore.instance.collection("users");
-                            users.doc(currentUser).collection("users").doc(controller.id).update({
-                              "FollowedUser":FieldValue.arrayRemove(list),
-                            }).then((value) {
-
-                            });
-                          },
-                          child: MudasirButton(
-                            onPressedbtn: () {},
-                            width: 258.w,
-                            height: 52.h,
-                            mergin: EdgeInsets.zero,
-                            colorss: appMainColor,
-                            child: Text(
-                              'Followed',
-                              style: TextStyle(
-                                color: colorWhite,
-                                fontSize: 25.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '     ',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        )
-                      : InkWell(
-                          onTap: () async {
-                            print("status 2");
-                            print(_followcontroller.followedList.contains(data["email"]));
-                             list.clear();
-                            ////
-                             list = [data["email"]];
-                             print("followed List is...2");
-                             print(list);
-
-
-                             // controller.toogle();
-                             final currentUser =
-                                 FirebaseAuth.instance.currentUser!.email;
-                             print("iam tapped");
-                             CollectionReference users = FirebaseFirestore.instance.collection("users");
-                             users.doc(currentUser).collection("users").doc(controller.id).update({
-                               "FollowedUser":FieldValue.arrayUnion(list),
-                             });
-                             // add to feed
-                             await feedactivityfollow(data["email"]);
-                             await sentNotification(data["playerid"],"conscious_media",name);
-
-
-
-                          },
-                          child: MudasirButton(
-                            onPressedbtn: () {},
-                            width: 258.w,
-                            height: 52.h,
-                            mergin: EdgeInsets.zero,
-                            colorss: appMainColor,
-                            child: Text(
-                              'Follow',
-                              style: TextStyle(
-                                color: colorWhite,
-                                fontSize: 25.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                          Image.asset(
+                            Images.bottom_top_panal,
+                            width: 40.w,
                           ),
-                        ),
-                  SizedBox(height: 10.h),
-                  InkWell(
-                    onTap: () {
-                      Get.to(()=> ChatView(
-                        currentId: currentuser,
-                        friendId: data["email"],
-                        name: data["name"],
-                        image: data["image"],
-
+                          Container(
+                              width: 30.w,
+                              height: 30.h,
+                              child: FloatingActionButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                backgroundColor: colorWhite,
+                                child: const Icon(Icons.close, color: colorBlack),
+                              )),
+                        ],
                       ),
-                      );
-                    },
-                    child: MudasirButton(
-                      width: 258.w,
-                      height: 52.h,
-                      mergin: EdgeInsets.zero,
-                      colorss: appMainColor,
-                      child: Text(
-                        'chat',
-                        style: TextStyle(
-                          color: colorWhite,
-                          fontSize: 25.sp,
-                          fontWeight: FontWeight.w500,
+                      SizedBox(height: 20.h),
+                      CircleAvatar(
+                        radius: 50.r,
+                        backgroundImage: NetworkImage(
+                          data["image"] ?? "not Get",
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Container(
-                    width: double.infinity.w,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Topics',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        color: blackColor.withOpacity(0.5),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Container(
-                    height: 100,
-                    child: ListView.builder(
-                      itemCount: controller.follow!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          height: 40.h,
-                          width: 351.w,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30.r),
-                            color: Color(0xffFAFAFA),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          data["name"] ?? "No Get",
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: Center(
-                            child: Text(
-                              controller.follow![index].toString(),
-                              style: TextStyle(
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.location_on,
+                              color: blackColor.withOpacity(0.5)),
+                          Text(
+                            data["location"] ?? "Not Get",
+                            style: TextStyle(
                                 fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
+                                color: blackColor.withOpacity(0.5)),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+                      FollowUser.contains(data["email"]) ?
+                           InkWell(
+                              onTap: () {
+                                setState(() {
+                                  controller.toggle();
+                                  print("${controller.isSelected}");
+                                  print("status 2");
+                                  print(_followcontroller.followedList.contains(data["email"]));
+                                  list = [data["email"]];
+                                  followedList.add(list);
+                                  final currentUser =
+                                      FirebaseAuth.instance.currentUser!.email;
+                                  print("iam tapped");
+                                  CollectionReference users = FirebaseFirestore.instance.collection("users");
+                                  users.doc(currentUser).collection("users").doc(controller.id).update({
+                                    "FollowedUser":FieldValue.arrayRemove(list),
+                                  }).then((value) {
+                                    Get.snackbar("Message", "${data["email"]} unfollow",snackPosition:SnackPosition.BOTTOM,
+                                        backgroundColor: Colors.black,colorText: Colors.white
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${data["email"]} is unFollowed")));
+
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const SearchMembersScreen()),
+                                    );
+                                  });
+
+                                });
+
+
+                              },
+                              child: MudasirButton(
+                                onPressedbtn: () {},
+                                width: 258.w,
+                                height: 52.h,
+                                mergin: EdgeInsets.zero,
+                                colorss: appMainColor,
+                                child: Text(
+                                  'Followed',
+                                  style: TextStyle(
+                                    color: colorWhite,
+                                    fontSize: 25.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : InkWell(
+                              onTap: () async {
+                                final currentUser =
+                                    FirebaseAuth.instance.currentUser!.email;
+                                print("iam tapped");
+
+                                list.clear();
+                                ////
+                                 list = [data["email"]];
+                                 print("followed List is...2");
+                                 print(list);
+                                 setState((){
+                                   CollectionReference users = FirebaseFirestore.instance.collection("users");
+                                   users.doc(currentUser).collection("users").doc(controller.id).update({
+                                     "FollowedUser":FieldValue.arrayUnion(list),
+                                   }).then((value) async {
+
+                                     await feedactivityfollow(data["email"]);
+                                     await sentNotification(data["playerid"],"conscious_media",name);
+                                     Get.snackbar("Message", "${data["email"]} follow you",snackPosition:SnackPosition.BOTTOM,
+                                         backgroundColor: Colors.black,colorText: Colors.white
+                                     );
+                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${data["email"]} is Followed")));
+
+                                     Navigator.pushReplacement(
+                                       context,
+                                       MaterialPageRoute(builder: (context) => const SearchMembersScreen()),
+                                     );
+                                   });
+                                 });
+
+
+
+
+
+
+                              },
+                              child: MudasirButton(
+                                onPressedbtn: () {},
+                                width: 258.w,
+                                height: 52.h,
+                                mergin: EdgeInsets.zero,
+                                colorss: appMainColor,
+                                child: Text(
+                                  'Follow',
+                                  style: TextStyle(
+                                    color: colorWhite,
+                                    fontSize: 25.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                             ),
+                      SizedBox(height: 10.h),
+                      InkWell(
+                        onTap: () {
+                          Get.to(()=> ChatView(
+                            currentId: currentuser,
+                            friendId: data["email"],
+                            name: data["name"],
+                            image: data["image"],
+
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  Container(
-                    width: double.infinity.w,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'About me',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        color: blackColor.withOpacity(0.5),
-                        fontWeight: FontWeight.w500,
+                          );
+                        },
+                        child: MudasirButton(
+                          width: 258.w,
+                          height: 52.h,
+                          mergin: EdgeInsets.zero,
+                          colorss: appMainColor,
+                          child: Text(
+                            'chat',
+                            style: TextStyle(
+                              color: colorWhite,
+                              fontSize: 25.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Container(
-                    width: double.infinity.w,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.',
-                      style: TextStyle(
-                          fontSize: 14.sp, fontWeight: FontWeight.w300),
-                    ),
-                  ),
-                ]);
+                      SizedBox(height: 10.h),
+                      Container(
+                        width: double.infinity.w,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Topics',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            color: blackColor.withOpacity(0.5),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Container(
+                        height: 100,
+                        child: ListView.builder(
+                          itemCount: data["selectedTopics"].length,
+                          itemBuilder: (BuildContext context, int index1) {
+                            return controller.follow.isEmpty ?const Text("No Get Topics") :
+                            Container(
+                              height: 40.h,
+                              width: 351.w,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30.r),
+                                color: const Color(0xffFAFAFA),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  data["selectedTopics"][index1].toString(),
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity.w,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'About me',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            color: blackColor.withOpacity(0.5),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Container(
+                        width: double.infinity.w,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dapibus ac libero id blandit. In risus neque, commodo quis luctus a, convallis quis sapien. Aliquam vitae pharetra nibh. Sed mollis interdum ante sit amet mollis. Vivamus efficitur tincidunt iaculis.',
+                          style: TextStyle(
+                              fontSize: 14.sp, fontWeight: FontWeight.w300),
+                        ),
+                      ),
+                    ]);
+              }
+            );
           }),
     ),
   );

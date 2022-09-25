@@ -136,6 +136,7 @@ class _EditProfileTwoScreenState extends State<EditProfileTwoScreen> {
                   ),
                   MyCustomTextField(
                       maxLines: 1,
+
                       hint: "My Following Topics (04)",
                       suffixIcon:
                           const Icon(Icons.arrow_forward_ios, color: colorBlack)),

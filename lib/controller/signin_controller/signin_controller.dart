@@ -31,7 +31,13 @@ class SignInController extends GetxController {
     // TODO: implement onInit
     super.onInit();
     //getTopicFollow();
-    await getToken();
+
+  }
+  bool select = false;
+  void toggle()
+  {
+    select = !select;
+    update();
   }
 
   getTopicFollow() async {
@@ -60,14 +66,15 @@ class SignInController extends GetxController {
     FirebaseAuth auth = FirebaseAuth.instance;
     try {
       UserCredential result = await auth.signInWithEmailAndPassword(
-          email: email.text, password: password.text);
+          email: email.text.trim(), password: password.text.trim());
       update();
       User? user = result.user;
       update();
       if (user != null) {
         if (kDebugMode) {
           print("Current user is available");
-          Get.to(() => BottomNavBar(),arguments:sList);
+          Get.offAll(() => BottomNavBar(),arguments:sList);
+          toggle();
         }
       }
       return (user!);
@@ -83,23 +90,19 @@ class SignInController extends GetxController {
   }
 
   /// Validation of Login
-  validation() {
+  validation(context) {
     if (email.text.isEmpty && password.text.isEmpty) {
       Get.snackbar("Message", "Please check your email and password ",
           backgroundColor: Colors.green);
     }
+    else
+      {
+        signInWithEmailAndPassword(context);
+        toggle();
+      }
   }
 
-  var token;
-  getToken() async {
-    token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    print(token);
-    if (token != null) {
-      Get.off(() => BottomNavBar());
-    } else {
-      Get.snackbar("Login", "Welcome to Our App");
-    }
-  }
+
   Future<void> resetPassword(String email) async {
     final  _firebaseAuth = FirebaseAuth.instance;
     await _firebaseAuth.sendPasswordResetEmail(email: email);

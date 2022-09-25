@@ -37,7 +37,7 @@ class _MemberShipScreenState extends State<MemberShipScreen> {
               topLeft: Radius.circular(30.r),
               topRight: Radius.circular(30.r),
             ),
-            image: DecorationImage(
+            image: const DecorationImage(
               image: AssetImage(Images.member_ship_background),
               fit: BoxFit.fill,
             ),

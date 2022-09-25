@@ -3,7 +3,7 @@ class Images {
   static const String appbar_action = 'assets/images/filter.png';
   static const String person_one = 'assets/images/person_one.png';
   static const String person_two = 'assets/images/person_two.png';
-  static const String person_three = 'assets/images/person_three.png';
+  static const String person_three = '';
   static const String person_four = 'assets/images/Ellipse 1247.png';
   static const String chats_person_one = 'assets/images/chat_one.png';
   static const String chats_person_two = 'assets/images/chat_two.png';

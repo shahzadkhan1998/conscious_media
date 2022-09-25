@@ -71,8 +71,10 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                 ),
                 SizedBox(height: 20.h),
                 MyCustomTextField(
+
                   controller: _createPostController.description,
                   hint: "What's on your mind?",
+
                   maxLines: 3,
                 ),
                 SizedBox(height: 20.h),
@@ -87,7 +89,7 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                       _createPostController.getImage(context);
                     },
                     child: Container(
-                      height: 120.h,
+                      height: 180.h,
                       width: double.infinity.w,
                       decoration: BoxDecoration(
                         color: colorGray,
@@ -97,23 +99,18 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                       child: Column(
                         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text("Add Photo/Video"),
-                          ),
-                          SizedBox(height: 10.h),
+
                           _createPostController.image == null ?
-                          Align(
-                            alignment: Alignment.center,
-                              child: Image.asset("assets/icons/icons.png")):
+                          Center(child: Image.asset("assets/icons/icons.png")):
                           Align(
                             alignment: Alignment.center,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(30.r),
                               child: Image.file(_createPostController.image!,
-                                height: 40,
                                 width: Get.width,
+                                height: 180.h,
                                 fit: BoxFit.cover,
 
                               ),
@@ -124,7 +121,9 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(
+                  height: 10.h,
+                ),
                 // MyCustomTextField(
                 //   hint: "Add a topic",
                 //   maxLines: 1,
@@ -162,19 +161,23 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                 ),
                 SizedBox(height: 20.h),
                 MyCustomTextField(
+
                   controller: _createPostController.title,
                   hint: "Add a title",
                   maxLines: 1,
                 ),
                 SizedBox(height: 20.h),
+                _createPostController.checkstatus ? Container(
+                  child: const CircularProgressIndicator.adaptive(),
+                ):
                 InkWell(
                   onTap: () async
                   {
 
                         await _createPostController.validation(_dropDownValue!);
+                        _createPostController.getTopic();
 
 
-                          await Get.to(()=>BottomNavBar());
 
 
                     // _createPostController.getTopicFollow();
@@ -188,7 +191,7 @@ class _CreateNewPostScreenState extends State<CreateNewPostScreen> {
                       'POST NOW',
                       style: TextStyle(color: colorWhite),
                     ),
-                  ),
+                  )
                 ),
               ],
             ),

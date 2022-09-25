@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../views/follow_topics/follow_one.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,11 +19,17 @@ class SignUpController extends GetxController
   double? lat;
   String address = "";
   var id;
+  var datacheck;
+
 
   // variable Declaration
   // image picker initialization
   File? image;
   var url;
+
+  var toggle = true;
+
+
 
 
   TextEditingController name = TextEditingController();
@@ -31,9 +38,12 @@ class SignUpController extends GetxController
   TextEditingController password = TextEditingController();
   TextEditingController confirmPassword = TextEditingController();
   @override
-  void onInit() {
+  void onInit() async {
     // TODO: implement onInit
     super.onInit();
+   // await getUserLocation();
+   // await convertToAdress();
+    await configOneSignal();
 
 
 
@@ -43,11 +53,6 @@ class SignUpController extends GetxController
   void onReady() async {
     // TODO: implement onReady
     super.onReady();
-
-      await getUserLocation();
-       await convertToAdress();
-
-
   }
   @override
   void onClose() {
@@ -58,6 +63,37 @@ class SignUpController extends GetxController
     location.dispose();
     password.dispose();
     confirmPassword.dispose();
+  }
+
+  ///// one signal
+  configOneSignal() async
+  {
+    OneSignal.shared.setLogLevel(OSLogLevel.debug, OSLogLevel.none);
+    OneSignal.shared.setAppId("f07e9a40-4f23-4ee8-9006-d1a1c99c726b");
+    await OneSignal.shared.promptUserForPushNotificationPermission(
+      fallbackToSettings: true,
+    );
+
+    OneSignal.shared.setSubscriptionObserver((OSSubscriptionStateChanges changes)
+    async{
+      final prefs = await SharedPreferences.getInstance();
+      final status = await OneSignal.shared.getDeviceState();
+      final String? playerid = await status?.userId;
+      print("Player id is ************");
+      print(playerid);
+      prefs.setString("oneSignalId", playerid!);
+      print("Shred pref data saved .....");
+      print(prefs.getString("oneSignalId"));
+    });
+
+  }
+
+  /// toggle
+  boolcheck()
+  {
+     toggle = !toggle;
+     update();
+     print(toggle);
   }
 
   ////// SignUp Function //////////
@@ -85,57 +121,75 @@ class SignUpController extends GetxController
        if (user == null) {
          print('User is currently signed out!');
        } else {
-        storeUserData();;
+        storeUserData();
          print('User is signed in!');
        }
      });
+
  }
 //Store to Cloud Firestore
  storeUserData() async
- {SharedPreferences prefs = await SharedPreferences.getInstance();
+ {
+   final pref = await SharedPreferences.getInstance();
 
    CollectionReference users = FirebaseFirestore.instance.collection('users');
-   users.doc(email.text).collection("users").add({
+  datacheck =  await users.doc(email.text).collection("users").add({
      "name":name.text,
      "email":email.text,
-     "location":location.text,
+     "location":country ?? "Location not found",
      "password":password.text,
      "confirmPassword":confirmPassword.text,
      "image":url,
-     "selectedTopics":"",
+     "selectedTopics":[],
       "id":"",
       "FollowedUser":[],
-     "playerid":prefs.getString("oneSignalId"),
+     "playerid":pref.getString("oneSignalId"),
    }).then((value) async
    {
      id = value.id;
-     users.doc(email.text).set(
+     print("id...");
+     print(id);
+     updateid(id);
+     await users.doc(email.text).set(
        {
          "email":email.text,
        }
-     ).then((value1)
-     {
-       users.doc(email.text.trim()).collection("users").doc(id).update({
-         "id":id
-       });
-       Get.to(()=>const FollowTopicScreen(),arguments:id);
-       print("ids is $id");
-     });
+
+     );
+
+
      print("Data is Stored");
 
-     prefs.setString("name",name.text.trim());
-     prefs.setString("email",email.text.trim());
-     prefs.setString("location",location.text.trim());
-     prefs.setString("password", password.text.trim()) ;
-     prefs.setString("confirmpassword", confirmPassword.text.trim() );
-     prefs.setString("image",url);
-     print(prefs.getString("name"));
-     print(prefs.getString("email"));
-     print(prefs.getString("image"));
+     pref.setString("name",name.text.trim());
+     pref.setString("email",email.text.trim());
+     pref.setString("location",location.text.trim());
+     pref.setString("password", password.text.trim()) ;
+     pref.setString("confirmpassword", confirmPassword.text.trim() );
+     pref.setString("image",url);
+     // print(prefs.getString("name"));
+     // print(prefs.getString("email"));
+     // print(prefs.getString("image"));
+
 
    });
 
+ if(id != "")
+ {
+   Get.offAll(()=>const FollowTopicScreen(),arguments:id);
+   print("ids is $id");
  }
+
+
+ }
+ /// update id
+  updateid(ids)
+  {
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+    users.doc(email.text).collection("users").doc(ids).update({
+      "id":id
+    });
+   print("id is stored");
+  }
  ///// Validation
  validation()
  {
@@ -150,11 +204,11 @@ class SignUpController extends GetxController
         Get.snackbar("Message", "Enter your Email",snackPosition:SnackPosition.BOTTOM,
             backgroundColor: Colors.black,colorText: Colors.white);
       }
-    else if(location.text == "")
-    {
-      Get.snackbar("Message", "Enter your Location",snackPosition:SnackPosition.BOTTOM,
-          backgroundColor: Colors.black,colorText: Colors.white);
-    }
+    // else if(location.text == "")
+    // {
+    //   Get.snackbar("Message", "Enter your Location",snackPosition:SnackPosition.BOTTOM,
+    //       backgroundColor: Colors.black,colorText: Colors.white);
+    // }
     else if(password.text == "")
       {
         Get.snackbar("Message", "Enter your password",snackPosition:SnackPosition.BOTTOM,
@@ -165,10 +219,39 @@ class SignUpController extends GetxController
         Get.snackbar("Message", "Enter your confirmPassword",snackPosition:SnackPosition.BOTTOM,
             backgroundColor: Colors.black,colorText: Colors.white);
       }
+    else if(url == null)
+      {
+        Get.snackbar("Message", "wait a bit ",snackPosition:SnackPosition.BOTTOM,
+            backgroundColor: Colors.black,colorText: Colors.white);
+      }
+
+    else if(country == null)
+      {
+        Get.snackbar("Message", "Location not found",snackPosition:SnackPosition.BOTTOM,
+            backgroundColor: Colors.black,colorText: Colors.white);
+      }
+    else if(image == null)
+      {
+        Get.snackbar("Message", "select image first",snackPosition:SnackPosition.BOTTOM,
+            backgroundColor: Colors.black,colorText: Colors.white);
+      }
+    else if(password.text != confirmPassword.text)
+    {
+      Get.snackbar("Message", "Password not matched",snackPosition:SnackPosition.BOTTOM,
+          backgroundColor: Colors.black,colorText: Colors.white);
+    }
+    else if(email.text != "@")
+    {
+      Get.snackbar("Message", "email validation required",snackPosition:SnackPosition.BOTTOM,
+          backgroundColor: Colors.black,colorText: Colors.white);
+    }
+
 
     else
       {
+
         Registor();
+        boolcheck();
       }
  }
 
@@ -178,15 +261,15 @@ class SignUpController extends GetxController
   {
     try {
       final pickedFile = await ImagePicker().pickImage(
-          source: ImageSource.camera);
-
+          source: ImageSource.gallery);
       if (pickedFile != null) {
         image = File(pickedFile.path);
         update();
         print("image url is .... $image");
         if(image != null)
           {
-            addPhotoTStorage(image!);
+            addPhotoTStorage(image!,context);
+            update();
           }
       }
       else {
@@ -196,16 +279,19 @@ class SignUpController extends GetxController
     {
       print(e);
     }
+    update();
 
   }
 
    // Store image to firebase firestore
-  Future addPhotoTStorage(File file) async {
+  Future addPhotoTStorage(File file,context) async {
     final storage = FirebaseStorage.instance;
-    var snapshot = await storage.ref().child(file.path).putFile(file);
+    var snapshot = await storage.ref().child(DateTime.now().toString()).putFile(file);
      url = await snapshot.ref.getDownloadURL();
     print(url);
+    update();
     return url;
+    update();
   }
 
   /// get current Location
@@ -233,22 +319,25 @@ class SignUpController extends GetxController
        lat = position.latitude;
        print(lat);
        print(long);
+       update();
 
 
     }
+    update();
   }
-
+   var country  ;
    convertToAdress() async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat!, long!).then((placemarks) {
 
       var output = 'No results found.';
       if (placemarks.isNotEmpty) {
-        output = placemarks[0].toString();
+        country = placemarks[0].country;
         print(output);
+        update();
       }
       return placemarks;
     });
-     
+     update();
   }
 
 

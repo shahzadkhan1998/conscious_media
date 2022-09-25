@@ -71,7 +71,7 @@ class BackButton2 extends StatelessWidget {
           color: colorWhite,
           borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Icon(Icons.arrow_back_ios_new, color: colorBlack),
+        child: const Icon(Icons.arrow_back_ios_new, color: colorBlack),
       ),
     );
   }

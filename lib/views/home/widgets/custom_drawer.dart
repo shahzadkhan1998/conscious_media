@@ -1,4 +1,5 @@
 
+import 'package:conscious_media/views/auth/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -137,10 +138,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         onTap: () async{
                           final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
                          await _firebaseAuth.signOut();
+
+                          Get.offAll(()=>const SignUpScreen());
                           setState(() {
 
                           });
-                          Get.to(()=>OnbordingScreen());
                         },
                         child: CommonText(
                             text: "Log out", text_color: colorGrean)),

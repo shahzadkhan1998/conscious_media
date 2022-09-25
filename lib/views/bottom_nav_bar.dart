@@ -7,6 +7,10 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../controller/Follow_controller/follow_controller.dart';
+import '../controller/create_post_controller/create_post_controller.dart';
+import '../controller/follow_topic/follow_topic_controller.dart';
+import '../controller/profile_controller/profile_controller.dart';
 import '../controller/showPost_controller/show_post_controller.dart';
 import '../utils/colors_resources.dart';
 
@@ -64,6 +68,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    final home = Get.put(ShowPostController());
+    final follow = Get.put(FollowTopic());
+    final memeber  = Get.put(FollowController());
+    final post = Get.put(CreatePostController());
+    final account = Get.put(ProfileController());
+    
     return SafeArea(
       child: Scaffold(
           // drawer: CustomDrawer(),

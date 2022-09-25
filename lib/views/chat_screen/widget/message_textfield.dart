@@ -83,7 +83,7 @@ class _MessageTextFieldState extends State<MessageTextField> {
                 },
                 ).then((value) {
                   FirebaseFirestore.instance
-                      .collection("user")
+                      .collection("users")
                       .doc(widget.friendId).set({
                       "message":messages
                   });

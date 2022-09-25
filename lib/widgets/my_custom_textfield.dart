@@ -17,6 +17,7 @@ class MyCustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final Color? color;
   final Color? border_color;
+  String? readonly ;
   // final Color borderColor;
   // final bool obscureText;
   // final InputDecoration decoration;
@@ -38,6 +39,7 @@ class MyCustomTextField extends StatelessWidget {
     this.maxLines,
     this.color,
     this.border_color,
+     this.readonly,
 
     // required this.borderColor,
     // required this.obscureText,
@@ -49,6 +51,8 @@ class MyCustomTextField extends StatelessWidget {
       width: width,
       height: hight,
       child: TextFormField(
+        readOnly: readonly =="read only"? true:false,
+
         // onChanged: onChange!,
         controller: controller,
         maxLines: maxLines ?? 1,

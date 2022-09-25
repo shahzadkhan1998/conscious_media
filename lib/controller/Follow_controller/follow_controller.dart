@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:conscious_media/utils/global_list.dart';
 import 'package:conscious_media/views/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -10,14 +11,15 @@ import 'package:get/get.dart';
 class FollowController extends GetxController
 {
   var UserFollowedLength = 0;
-  var follow;
-   var isSelected = false;
+  var follow = [];
   var id;
   List followedList = [];
 
-  toogle() {
-    isSelected = !isSelected;
-    update();
+  bool isSelected = false;
+  toggle()
+  {
+      isSelected = !isSelected;
+      update();
   }
 
 
@@ -30,10 +32,13 @@ class FollowController extends GetxController
     //await getTopicFollow();
   }
   @override
-  void onReady() {
+  void onReady() async {
     // TODO: implement onReady
     super.onReady();
+    getUserId();
+
   }
+
   @override
   void onClose() {
     // TODO: implement onClose
@@ -51,7 +56,9 @@ class FollowController extends GetxController
         .then((QuerySnapshot querySnapshot) {
       for (var doc in querySnapshot.docs) {
         id = doc["id"];
+        followedList.clear();
         followedList = doc["FollowedUser"];
+        update();
         print("iD is ...... $id");
         print("Followed List is ...");
         print(followedList);
@@ -61,28 +68,6 @@ class FollowController extends GetxController
       update();
     });
   }
-  ///// follow Topic ////////
-// getTopicFollow() async {
-//   final currentuser = FirebaseAuth.instance.currentUser;
-//   var email = currentuser!.email;
-//   await FirebaseFirestore.instance
-//       .collection('TopicFollow')
-//       .doc(email)
-//       .get()
-//       .then((value) {
-//     update();
-//     List alldata = value.data()!["selectedTopics"];
-//     update();
-//     //print(alldata);
-//     update();
-//     print("Selected Topics");
-//     follow = List<String>.from(alldata);
-//     print(follow);
-//
-//     update();
-//   });
-//   update();
-// }
 
 getTopics() async
 {
@@ -94,9 +79,10 @@ getTopics() async
             var alldata = doc["selectedTopics"];
             follow = List<String>.from(alldata);
             print("allTOpcs");
-            print(alldata);
-          }
+            print(alldata);}
+        update();
   });
+  update();
 }
 
 ///<<<<<<<<<<<<<Ends<<<<<<<<<<<<<<<<<<<<<<<//

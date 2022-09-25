@@ -22,7 +22,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 var feedList = [];
   getFeeds() async
   {
-    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    final currentuser = await FirebaseAuth.instance.currentUser!.email;
     FirebaseFirestore.instance.collection("feed").doc(currentuser).
     collection("feeditem").get().then((QuerySnapshot snapshot)
     {
@@ -32,9 +32,12 @@ var feedList = [];
           feedList.add(alldata);
           print("Feed is ...");
           print(feedList);
+
           setState(() {
-            
+
           });
+
+
         }
     });
   }
@@ -43,7 +46,14 @@ var feedList = [];
   void initState() {
     // TODO: implement initState
     super.initState();
-    getFeeds();
+
+  }
+
+  @override
+  void didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    await getFeeds();
   }
   final imageList = [
     Images.notification_one,
@@ -100,14 +110,20 @@ var feedList = [];
                    child: Text("No Feed found"),
                  );
                }
-             return ListTile(
+             if(feedList.isEmpty)
+               {
+                 return const Center(
+                   child: Text("No Feed found"),
+                 );
+               }
+             return feedList.isEmpty ? const Center(child:  Text("No Feed Found"),):ListTile(
                leading: ClipRRect(
                  borderRadius: BorderRadius.circular(15),
-                 child: Image.network(feedList[index]["image"]),
+                 child: Image.network(feedList[index]["image"] ?? ""),
                ),
-               title: feedList[index]["type"] == "like"?Text("${feedList[index]["name"]} is ${feedList[index]["type"]} your Post"):
-               Text("${feedList[index]["name"]} is ${feedList[index]["type"]} you"),
-               subtitle:Text(feedList[index]["email"]),
+               title: feedList[index]["type"] == "like"?Text("${feedList[index]["name"]  ?? "Not Get"} is ${feedList[index]["type"] ?? "Not Get"} your Post"):
+               Text("${feedList[index]["name"] ?? "Not Get"} is ${feedList[index]["type"] ?? "Not Get"} you"),
+               subtitle:Text(feedList[index]["email"] ?? "Not Get"),
                trailing: const Icon((Icons.notifications_active)),
              );
            },),

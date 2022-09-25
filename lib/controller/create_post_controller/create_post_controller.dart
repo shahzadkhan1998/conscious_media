@@ -32,14 +32,14 @@ class CreatePostController extends GetxController {
   TextEditingController topic = TextEditingController();
 
   @override
-  void onInit() {
+  void onInit() async {
     // TODO: implement onInit
 
     super.onInit();
 
 
-      getCurrentUser();
-      getTopic();
+      await getCurrentUser();
+      await getTopic();
 
   }
 
@@ -55,6 +55,15 @@ class CreatePostController extends GetxController {
   void onClose() {
     // TODO: implement onClose
     super.onClose();
+  }
+
+  /// Toggle
+  bool checkstatus = false;
+
+  void toggle()
+  {
+    checkstatus = !checkstatus;
+    update();
   }
 
   /// Get Name of the Current user /// Current user name ////
@@ -90,9 +99,8 @@ class CreatePostController extends GetxController {
       for(var doc in querySnapshot.docs)
       {
         List topicsList = doc["selectedTopics"];
-        sList = List<String>.from(topicsList);;
-
-
+        sList = List<String>.from(topicsList);
+        update();
       }
     });
   }
@@ -131,6 +139,10 @@ class CreatePostController extends GetxController {
       updateAllPostId();
     }).then((value) {
       print("Post is stored");
+      checkstatus = false;
+      Get.to(()=>BottomNavBar());
+      title.clear();
+      description.clear();
     });
 
   }
@@ -146,6 +158,7 @@ class CreatePostController extends GetxController {
     });
     print("$postid");
     update();
+
   }
 
   /// store Curent user Post to firestore
@@ -194,6 +207,7 @@ class CreatePostController extends GetxController {
       users.doc(currentuser).set({
         "email":currentuser,
       });
+
     });
 
     update();
@@ -206,7 +220,7 @@ class CreatePostController extends GetxController {
   getImage(context) async {
     try {
       final pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.camera);
+          await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
         image = File(pickedFile.path);
@@ -241,9 +255,16 @@ class CreatePostController extends GetxController {
       Get.snackbar("message", "Note is missing");
     } else if (topic == "") {
       Get.snackbar("message", "topic is missing");
-    } else {
+    }
+    else if(image == null)
+      {
+        Get.snackbar("message", "image is missing ");
+      }
+    else {
       await storeAllPost(topic);
       await storeCurrentUserPost(topic);
+      toggle();
     }
   }
+
 }

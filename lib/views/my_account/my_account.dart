@@ -31,7 +31,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       for(var doc in querySnapshot.docs)
       {
         controller.name = doc["name"];
-        controller.image = doc["image"];
+        controller.image = doc["image"].toString();
         controller.following = doc["FollowedUser"] as List;
         controller.topicfollowed = doc["selectedTopics"] as List;
         controller.location = doc["location"];
@@ -46,12 +46,59 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   }
 
+  followerCount()
+  {
+    FirebaseFirestore.instance.collection("users").get().then((QuerySnapshot snapshot) {
+         for(var doc in snapshot.docs)
+           {
+             var ids = doc.id;
+             getFollowers(ids);
+
+
+           }
+    });
+  }
+List follow  = [];
+ int  count = 0;
+ int a = 0;
+
+  getFollowers(id)
+  {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance.collection("users").doc(id).collection("users").get().then((value) {
+      for(var doc in value.docs)
+        {
+           follow = doc["FollowedUser"];
+            count = follow.where((c) => c == currentuser).length;
+           print("Count is.......");
+           print(count);
+           if(count >0) {
+             a++;
+             print(a.toString());
+             setState(() {
+             });
+           }
+
+        }
+
+    });
+
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getUserinfo();
 
+
+  }
+
+  @override
+  void didChangeDependencies() async {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    await getUserinfo();
+    await followerCount();
   }
   @override
   Widget build(BuildContext context) {
@@ -81,6 +128,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           fontWeight: FontWeight.w400),
                     ),
                   ),
+                  controller.image != null ?
                   Positioned(
                     top: 160.h,
                     bottom: 0.h,
@@ -91,7 +139,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         onTap: () {},
                         child: CircleAvatar(
                           radius: 70.r,
-                          backgroundImage: NetworkImage(controller.image),
+                          backgroundImage:NetworkImage(controller.image),
+                        ),
+                      ),
+                    ),
+                  ):Positioned(
+                    top: 160.h,
+                    bottom: 0.h,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: InkWell(
+                        onTap: () {},
+                        child: CircleAvatar(
+                          radius: 70.r,
+                          backgroundImage:AssetImage("assets/icons/icons.png"),
                         ),
                       ),
                     ),
@@ -102,9 +164,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Column(
               children: [
                 SizedBox(height: 10.h),
-                Text(controller.name, style: TextStyle(fontSize: 22.sp)),
+               controller.name==null?const Text("No name Get"): Text(controller.name, style: TextStyle(fontSize: 22.sp)),
                 SizedBox(height: 5.h),
-                Text(controller.name,
+
+              controller.name == null ? Text("no name get"):Text(controller.name,
                     style: TextStyle(fontSize: 18.sp, letterSpacing: 1)),
               ],
             ),
@@ -128,15 +191,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(30.0.r),
                             color: colorGray,
                           ),
-                          child: Text("0 Followers",
+                          child: a == 0 ?  Text("0 Follower", style: TextStyle(
+                              fontSize: 18.sp,
+                              color: colorPurple,
+                              fontWeight: FontWeight.w400),):Text("${a.toString()} Follower",
                               style: TextStyle(
-                                  color: colorGrean,
+                                  color: colorPurple,
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w400),
                               textAlign: TextAlign.center),
                         ),
                       ),
                       SizedBox(width: 20.w),
+                      controller.following.length == null ?Expanded(
+                        child: Container(
+                          height: 52.h,
+                          width: double.infinity.w,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.0.r),
+                            color: colorGray,
+                          ),
+                          child: Text("0 Following",
+                              style: TextStyle(
+                                  fontSize: 18.sp,
+                                  color: colorPurple,
+                                  fontWeight: FontWeight.w400),
+                              textAlign: TextAlign.center),
+                        ),
+                      ):
                       Expanded(
                         child: Container(
                           height: 52.h,
@@ -160,24 +243,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Container(
                     width: double.infinity.w,
                     alignment: Alignment.centerLeft,
-                    child: Text("Edit Profile"),
+                    child: const Text("Edit Profile"),
                   ),
                   SizedBox(height: 10.h),
                   MyCustomTextField(
+
                       maxLines: 1,
-                      hint: "${controller.topicfollowed}",
+                      hint: controller.topicfollowed==null?"no Followed Topic get":"${controller.topicfollowed}",
                       suffixIcon:
-                          Icon(Icons.arrow_forward_ios, color: colorBlack)),
+                          const Icon(Icons.arrow_forward_ios, color: colorBlack)),
                   SizedBox(height: 20.h),
                   Container(
                     width: double.infinity.w,
                     alignment: Alignment.centerLeft,
-                    child: Text("My Location"),
+                    child: const Text("My Location"),
                   ),
                   SizedBox(height: 20.h),
                   MyCustomTextField(
                     maxLines: 1,
-                    hint: "${controller.location}",
+
+                    hint: controller.location==null?"No Location get":"${controller.location}",
                     prefixIcon: Icon(Icons.location_on, color: appMainColor),
                     suffixIcon: Icon(Icons.edit, color: colorBlack),
                   ),

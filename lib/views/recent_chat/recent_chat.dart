@@ -30,6 +30,17 @@ class _RecentChatState extends State<RecentChat> {
   var lastMessage;
   var lastMessageList = [];
 
+
+  getCurrentUserLastMessage()
+  {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    FirebaseFirestore.instance.collection("users").doc(currentuser).get().then((value){
+          var data = value.data();
+          lastMessage = data!["message"];
+          print("last Message");
+    });
+
+  }
   getFollowedUser() async {
     final currentuser = FirebaseAuth.instance.currentUser!.email;
     FirebaseFirestore.instance
@@ -47,7 +58,6 @@ class _RecentChatState extends State<RecentChat> {
         print(Followeduser.runtimeType);
         getFollowedUserid(Followeduser);
       }
-      setState(() {});
     });
   }
 
@@ -87,6 +97,8 @@ class _RecentChatState extends State<RecentChat> {
     super.didChangeDependencies();
     // await getFollowedUser();
     // formattedTime = DateFormat.jm().format(now);
+    await getCurrentUserLastMessage();
+
 
   }
 
@@ -120,7 +132,7 @@ class _RecentChatState extends State<RecentChat> {
           ),
         ),
       ),
-      body: alluserdataList.isEmpty ? Center(child: CircularProgressIndicator.adaptive(),):Container(
+      body: alluserdataList.isEmpty ? const Center(child: Text("No Followed User"),):Container(
         height: Get.height,
         child: Column(
 
@@ -147,7 +159,7 @@ class _RecentChatState extends State<RecentChat> {
                                     alluserdataList[index]["name"],
                                     style: const TextStyle(color: Colors.black),
                                   ),
-                                  subtitle:Text("waiting"),
+                                  subtitle:lastMessage == null ? const Text("No Last Message"):Text(lastMessage.toString()),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(5),
                                     child: Image.network(

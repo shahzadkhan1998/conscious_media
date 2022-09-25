@@ -50,12 +50,11 @@ class _Posted_Posts_ScreenState extends State<Posted_Posts_Screen> {
                   post_title: "Jessicaa",
                   post_description: "Eco tourism",
                   // post_image: Images.person_three,
-                  post_user_image: Image.asset(Images.person_three),
                   post_title_body:
                       'Lorem ipsum dolor sit amet, consectetur adipiscing eli. Nam dapibus ac libero id blandit',
                   // post_like_btn: () {},
                   post_like_count: '10',
-                  post_comment_count: '122',
+                  post_comment_count: '122', likeList: [],
                 ),
 
                 // TextField for comments
