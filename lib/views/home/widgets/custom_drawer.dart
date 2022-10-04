@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/colors_resources.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -138,6 +139,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         onTap: () async{
                           final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
                          await _firebaseAuth.signOut();
+                         final pref = await SharedPreferences.getInstance();
+                           await pref.clear();
 
                           Get.offAll(()=>const SignUpScreen());
                           setState(() {

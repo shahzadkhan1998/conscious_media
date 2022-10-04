@@ -22,7 +22,6 @@ class CreatePostController extends GetxController {
   var postidu;
   var comments = [];
 
-
   File? image;
   var url;
   var name;
@@ -30,17 +29,20 @@ class CreatePostController extends GetxController {
   TextEditingController title = TextEditingController();
   TextEditingController description = TextEditingController();
   TextEditingController topic = TextEditingController();
+  var user;
 
   @override
   void onInit() async {
     // TODO: implement onInit
+    user = FirebaseAuth.instance.currentUser!.email;
+    if (kDebugMode) {
+      print(user);
+    }
 
     super.onInit();
 
-
-      await getCurrentUser();
-      await getTopic();
-
+    await getCurrentUser();
+    await getTopic();
   }
 
   @override
@@ -48,7 +50,6 @@ class CreatePostController extends GetxController {
     // TODO: implement onReady
     super.onReady();
     getCurrentUser();
-
   }
 
   @override
@@ -60,8 +61,7 @@ class CreatePostController extends GetxController {
   /// Toggle
   bool checkstatus = false;
 
-  void toggle()
-  {
+  void toggle() {
     checkstatus = !checkstatus;
     update();
   }
@@ -83,7 +83,6 @@ class CreatePostController extends GetxController {
         userimage = doc["image"];
         id = doc["id"];
         print(id);
-
       });
     });
   }
@@ -91,21 +90,21 @@ class CreatePostController extends GetxController {
   /// Get all topic which current
   //user followed
   /// which topic he Followed///
-  getTopic()
-  async {
-    final currentuser  = FirebaseAuth.instance.currentUser!.email;
-    await FirebaseFirestore.instance.collection("users").doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot)
-    {
-      for(var doc in querySnapshot.docs)
-      {
+  getTopic() async {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentuser)
+        .collection("users")
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      for (var doc in querySnapshot.docs) {
         List topicsList = doc["selectedTopics"];
         sList = List<String>.from(topicsList);
         update();
       }
     });
   }
-
-
 
   /// Store all Post to firebase
   storeAllPost(topic) async {
@@ -125,26 +124,23 @@ class CreatePostController extends GetxController {
       "like": likes,
       "likeCount": "",
       "followers": "",
-      "name": prefs.getString('name'),
-      "userimage": prefs.getString('image'),
-      "userid": prefs.getString('email'),
+      "name": name,
+      "userimage": userimage,
+      "userid": email,
       "postid": postid,
     }).then((value) {
       postid = value.id;
       users.doc(email).set({
-
         "email": email.toString(),
-
       }).then((value) {});
       updateAllPostId();
     }).then((value) {
       print("Post is stored");
       checkstatus = false;
-      Get.to(()=>BottomNavBar());
+      Get.to(() => BottomNavBar());
       title.clear();
       description.clear();
     });
-
   }
 
   /////// update post id ////////
@@ -158,7 +154,6 @@ class CreatePostController extends GetxController {
     });
     print("$postid");
     update();
-
   }
 
   /// store Curent user Post to firestore
@@ -194,7 +189,7 @@ class CreatePostController extends GetxController {
   ////// update  postid for user//
   updateUserPostId() async {
     final currentuser = await FirebaseAuth.instance.currentUser!.email;
-  
+
     CollectionReference users =
         FirebaseFirestore.instance.collection('UserPost');
     users.doc(currentuser).collection("UserPost").doc(postidu).update({
@@ -202,12 +197,10 @@ class CreatePostController extends GetxController {
     }).then((value) {
       print("$postidu");
       print("post Success");
-    }).then((value)
-    {
+    }).then((value) {
       users.doc(currentuser).set({
-        "email":currentuser,
+        "email": currentuser,
       });
-
     });
 
     update();
@@ -255,16 +248,12 @@ class CreatePostController extends GetxController {
       Get.snackbar("message", "Note is missing");
     } else if (topic == "") {
       Get.snackbar("message", "topic is missing");
-    }
-    else if(image == null)
-      {
-        Get.snackbar("message", "image is missing ");
-      }
-    else {
+    } else if (image == null) {
+      Get.snackbar("message", "image is missing ");
+    } else {
       await storeAllPost(topic);
       await storeCurrentUserPost(topic);
       toggle();
     }
   }
-
 }

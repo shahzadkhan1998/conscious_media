@@ -64,28 +64,26 @@ class _HomePageScreenState extends State<HomePageScreen> {
   final currentuser = FirebaseAuth.instance.currentUser;
   var uid;
 
-
-
-  bool loading =true;
-
+  bool loading = true;
 
   /// get topics and follwers
-  getTopicAndFollower()
-  async {
-    final currentuser  = FirebaseAuth.instance.currentUser!.email;
-   await FirebaseFirestore.instance.collection("users").doc(currentuser).collection("users").get().then((QuerySnapshot querySnapshot)
-    {
+  getTopicAndFollower() async {
+    final currentuser = FirebaseAuth.instance.currentUser!.email;
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(currentuser)
+        .collection("users")
+        .get()
+        .then((QuerySnapshot querySnapshot) {
       print("Hiiiiiiiiii1");
-      for(var doc in querySnapshot.docs)
-        {
-          print("Hiiiiiiiiii2");
-         topicsList = doc["selectedTopics"];
-         FollwedUser = doc["FollowedUser"];
-         print("Home data is");
-         print(topicsList);
-         print(FollwedUser);
-
-        }
+      for (var doc in querySnapshot.docs) {
+        print("Hiiiiiiiiii2");
+        topicsList = doc["selectedTopics"];
+        FollwedUser = doc["FollowedUser"];
+        print("Home data is");
+        print(topicsList);
+        print(FollwedUser);
+      }
     });
   }
 
@@ -97,7 +95,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
     await getTopicAndFollower();
 
     setState(() {
-      loading=false;
+      loading = false;
     });
   }
 
@@ -105,10 +103,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     allPostList.clear();
     final currentuser = FirebaseAuth.instance.currentUser!.email;
-
 
     return GetBuilder<ShowPostController>(
       init: ShowPostController(),
@@ -118,195 +114,220 @@ class _HomePageScreenState extends State<HomePageScreen> {
             //bottomNavigationBar: BottomNavBar();
             drawer: const CustomDrawer(),
             body: Container(
-              height:Get.height*800,
-              child:loading?const Center(child:CircularProgressIndicator()):
-              SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    const AppbarHome(),
-                    SizedBox(
-                      height: 10.h,
-                    ),
-                    Container(
-                      child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection("AllPost").snapshots(),
+              height: Get.height * 800,
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: 20.h,
+                          ),
+                          const AppbarHome(),
+                          SizedBox(
+                            height: 10.h,
+                          ),
+                          Container(
+                            child: StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance
+                                  .collection("AllPost")
+                                  .snapshots(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<QuerySnapshot<dynamic>>
+                                      snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator.adaptive(),
+                                  );
+                                }
 
-                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<dynamic>> snapshot) {
-                          if(!snapshot.hasData)
-                            {
-                              return const Center(
-                                child: CircularProgressIndicator()
-                              );
-                            }
-                          if(snapshot.connectionState == ConnectionState.waiting)
-                            {
-                              return const Center(
-                                child: CircularProgressIndicator.adaptive(),
-                              );
-                            }
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  controller: _scrollController,
+                                  physics: const ScrollPhysics(),
+                                  itemCount: snapshot.data!.docs.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    if (snapshot.data!.docs.length < 1) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+                                    var id = snapshot.data!.docs[index].id;
 
-                           return ListView.builder(
-                             shrinkWrap: true,
-                             controller: _scrollController,
-                             physics:const ScrollPhysics(),
-                             itemCount: snapshot.data!.docs.length,
-                             itemBuilder: (BuildContext context, int index) {
-                               if(snapshot.data!.docs.length<1)
-                                 {
-                                   return const Center(
-                                     child: CircularProgressIndicator(),
-                                   );
-                                 }
-                               var id = snapshot.data!.docs[index].id;
-
-
-                               return Container(
-                                 child: StreamBuilder<QuerySnapshot>(
-                                   stream: FirebaseFirestore.instance.collection("AllPost")
-                                       .doc(id).
-                                       collection("AllPost").
-                                       snapshots(),
-                                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot<dynamic>> snapshot1) {
-                                     if(!snapshot1.hasData)
-                                       {
-                                         return const Center(
-                                           child: CircularProgressIndicator()
-                                         );
-                                       }
-                                     if(snapshot1.connectionState == ConnectionState.waiting)
-                                       {
-                                         return CircularProgressIndicator.adaptive();
-                                       }
-
-                                     if(snapshot1.hasError)
-                                       {
-                                         return const Center(
-                                           child: Text("Error"),
-                                         );
-                                       }
-                                     return ListView.builder(
-                                       shrinkWrap: true,
-                                       controller: _scrollController,
-                                       physics: const ScrollPhysics(),
-                                       itemCount: snapshot1.data!.docs.length,
-                                       itemBuilder: (BuildContext context, int index1)
-                                       {
-                                         if(snapshot1.data!.docs.length <1)
-                                           {
-                                             return const Center(
-                                               child: CircularProgressIndicator.adaptive(),
-                                             );
-                                           }
-
-
-                                        var allPostList = [];
-                                        // var allpost  = snapshot1.data!.docs[index1].data() ;
-                                         Map<String, dynamic> data = snapshot1.data!.docs[index1].data()! as Map<String, dynamic>;
-
-                                         print("Allpost List   ********");
-                                         print(allPostList);
-                                         var topics = snapshot1.data!.docs[index1]["topic"];
-                                         print("Topics ********");
-                                         print(topics);
-                                         var userid = snapshot1.data!.docs[index1]["userid"];
-
-
-
-
-                                         // Comments and Comments Length
-                                         List comments = snapshot1.data!.docs[index1]["comment"] as List;
-                                         print("Comments..........");
-                                         print(comments);
-                                       //  List likes = snapshot1.data!.docs[index1]["like"] as List;
-
-
-                                         // print("Likes");
-                                         // print(likes);
-                                         // List list = [];
-                                         // for (var key in likes) {
-                                         //   list.add(key);
-                                         // }
-                                         // print("Likes list");
-                                         // print(likes);
-
-
-
-                                         if(topicsList.contains(topics) || FollwedUser.contains(userid))
-                                           {
-
-                                             Map<String, dynamic> data1 = snapshot1.data!.docs[index1].data()! as Map<String, dynamic>;
-                                            // print("data 1 is ????????????????????????????");
-                                              allPostList.add(data1);
-                                              // like
-                                             List likes = snapshot1.data!.docs[index1]["like"] as List;
-
-
-                                             print("Likes");
-                                             print(likes);
-                                             List list = [];
-                                             for (var key in likes) {
-                                               list.add(key);
-                                             }
-                                             print("Likes list");
-                                             print(likes);
-
-                                             // print(allPostList);
-                                          //   print("???????????????????????????????????????");
-                                                 for(int j = 0 ; j<allPostList.length;j++)
-                                                   {
-                                                     print("J value is ........");
-                                                     print(j.toString());
-
-                                                     return Container(
-                                                       child: ReadPost(
-                                                         index:j,
-
-                                                         post_title_body:allPostList[j]["name"].toString()?? "No Get Data",
-                                                         post_image:allPostList[j]["image"].toString() ?? "No Get Data",
-                                                         post_title: allPostList[j]["name"].toString() ?? "No Get Data",
-                                                         post_description:allPostList[j]["topic"].toString() ?? "No Get Data",
-                                                         post_user_image:allPostList[j]["userimage"].toString() ?? "No Get value",
-                                                         list: list ?? [],
-                                                         likeList: allPostList,
-                                                         comment: comments,
-
-                                                       ),
-
-                                                     );
-
-                                                   }
-
-
-
-
-                                             return Container();
-                                           }
-                                        else
-                                          {
-                                            return Container();
+                                    return Container(
+                                      child: StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance
+                                            .collection("AllPost")
+                                            .doc(id)
+                                            .collection("AllPost")
+                                            .snapshots(),
+                                        builder: (BuildContext context,
+                                            AsyncSnapshot<
+                                                    QuerySnapshot<dynamic>>
+                                                snapshot1) {
+                                          if (!snapshot1.hasData) {
+                                            return const Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                          }
+                                          if (snapshot1.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return CircularProgressIndicator
+                                                .adaptive();
                                           }
 
-                                        // return Container();
-                                       },
+                                          if (snapshot1.hasError) {
+                                            return const Center(
+                                              child: Text("Error"),
+                                            );
+                                          }
+                                          return ListView.builder(
+                                            shrinkWrap: true,
+                                            controller: _scrollController,
+                                            physics: const ScrollPhysics(),
+                                            itemCount:
+                                                snapshot1.data!.docs.length,
+                                            itemBuilder: (BuildContext context,
+                                                int index1) {
+                                              if (snapshot1.data!.docs.length <
+                                                  1) {
+                                                return const Center(
+                                                  child:
+                                                      CircularProgressIndicator
+                                                          .adaptive(),
+                                                );
+                                              }
 
-                                     );
+                                              var allPostList = [];
+                                              // var allpost  = snapshot1.data!.docs[index1].data() ;
+                                              Map<String, dynamic> data =
+                                                  snapshot1.data!.docs[index1]
+                                                          .data()!
+                                                      as Map<String, dynamic>;
 
-                                   },),
-                               );
-                             },);
+                                              print("Allpost List   ********");
+                                              print(allPostList);
+                                              var topics = snapshot1
+                                                  .data!.docs[index1]["topic"];
+                                              print("Topics ********");
+                                              print(topics);
+                                              var userid = snapshot1
+                                                  .data!.docs[index1]["userid"];
 
+                                              // Comments and Comments Length
+                                              List comments =
+                                                  snapshot1.data!.docs[index1]
+                                                      ["comment"] as List;
+                                              print("Comments..........");
+                                              print(comments);
+                                              //  List likes = snapshot1.data!.docs[index1]["like"] as List;
 
+                                              // print("Likes");
+                                              // print(likes);
+                                              // List list = [];
+                                              // for (var key in likes) {
+                                              //   list.add(key);
+                                              // }
+                                              // print("Likes list");
+                                              // print(likes);
 
+                                              if (topicsList.contains(topics) ||
+                                                  FollwedUser.contains(
+                                                      userid)) {
+                                                Map<String, dynamic> data1 =
+                                                    snapshot1.data!.docs[index1]
+                                                            .data()!
+                                                        as Map<String, dynamic>;
+                                                // print("data 1 is ????????????????????????????");
+                                                allPostList.add(data1);
+                                                //   // like
+                                                //  List likes = snapshot1.data!.docs[index1]["like"] as List;
 
-                        },),
-                    )
-                  ],
-                ),
-              ),
+                                                //  print("Likes");
+                                                //  print(likes);
+                                                //  List list = [];
+                                                //  for (var key in likes) {
+                                                //    list.add(key);
+                                                //  }
+                                                //  print("Likes list");
+                                                //  print(likes);
+
+                                                // print(allPostList);
+                                                //   print("???????????????????????????????????????");
+                                                for (int j = 0;
+                                                    j < allPostList.length;
+                                                    j++) {
+                                                  List likes = allPostList[j]
+                                                      ["like"] as List;
+                                                  print("Likes");
+                                                  print(likes);
+                                                  List list = [];
+                                                  for (var key in likes) {
+                                                    list.add(key);
+                                                  }
+                                                  print("Likes list");
+                                                  print(likes);
+                                                  print("J value is ........");
+                                                  print(j.toString());
+
+                                                  return Container(
+                                                    child: ReadPost(
+                                                      index: j,
+                                                      post_title_body:
+                                                          allPostList[j]["name"]
+                                                                  .toString() ??
+                                                              "No Get Data",
+                                                      post_image: allPostList[j]
+                                                                  ["image"]
+                                                              .toString() ??
+                                                          "No Get Data",
+                                                      post_title: allPostList[j]
+                                                                  ["name"]
+                                                              .toString() ??
+                                                          "No Get Data",
+                                                      post_description:
+                                                          allPostList[j]
+                                                                      ["topic"]
+                                                                  .toString() ??
+                                                              "No Get Data",
+                                                      post_user_image:
+                                                          allPostList[j][
+                                                                      "userimage"]
+                                                                  .toString() ??
+                                                              "No Get value",
+                                                      list: list,
+                                                      likeList: allPostList,
+                                                      comment: comments,
+                                                    ),
+                                                  );
+                                                }
+
+                                                return Container();
+                                              } else {
+                                                return Container();
+                                              }
+
+                                              // return Container();
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
             ),
           ),
         );

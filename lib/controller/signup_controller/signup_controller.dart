@@ -240,11 +240,7 @@ class SignUpController extends GetxController
       Get.snackbar("Message", "Password not matched",snackPosition:SnackPosition.BOTTOM,
           backgroundColor: Colors.black,colorText: Colors.white);
     }
-    else if(email.text != "@")
-    {
-      Get.snackbar("Message", "email validation required",snackPosition:SnackPosition.BOTTOM,
-          backgroundColor: Colors.black,colorText: Colors.white);
-    }
+   
 
 
     else
